@@ -4,18 +4,34 @@ namespace App\Core;
 
 class Request
 {
+    /**
+     * Route parameters
+     */
+    private static array $params = [];
+
+    /**
+     * HTTP Method
+     */
     public static function method(): string
     {
-        return $_SERVER['REQUEST_METHOD'];
+        return strtoupper($_SERVER['REQUEST_METHOD']);
     }
 
+    /**
+     * URI
+     */
     public static function uri(): string
     {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        return rtrim($uri, '/');
+        $uri = rtrim($uri, '/');
+
+        return $uri ?: '/';
     }
 
+    /**
+     * JSON Body
+     */
     public static function body(): array
     {
         $input = file_get_contents("php://input");
@@ -27,7 +43,10 @@ class Request
         return json_decode($input, true) ?? [];
     }
 
-    public static function query(string $key = null): mixed
+    /**
+     * Query Parameters
+     */
+    public static function query(?string $key = null): mixed
     {
         if ($key === null) {
             return $_GET;
@@ -36,7 +55,10 @@ class Request
         return $_GET[$key] ?? null;
     }
 
-    public static function post(string $key = null): mixed
+    /**
+     * POST Data
+     */
+    public static function post(?string $key = null): mixed
     {
         if ($key === null) {
             return $_POST;
@@ -45,15 +67,65 @@ class Request
         return $_POST[$key] ?? null;
     }
 
+    /**
+     * Uploaded Files
+     */
     public static function files(): array
     {
         return $_FILES;
     }
 
+    /**
+     * HTTP Header
+     */
     public static function header(string $name): ?string
     {
         $headers = getallheaders();
 
         return $headers[$name] ?? null;
+    }
+
+    /**
+     * Store Route Parameters
+     */
+    public static function setParams(array $params): void
+    {
+        self::$params = $params;
+    }
+
+    /**
+     * Get All Route Parameters
+     */
+    public static function params(): array
+    {
+        return self::$params;
+    }
+
+    /**
+     * Get Single Route Parameter
+     */
+    public static function param(string $key): mixed
+    {
+        return self::$params[$key] ?? null;
+    }
+
+    /**
+     * Check if Request has JSON Body
+     */
+    public static function has(string $key): bool
+    {
+        $body = self::body();
+
+        return array_key_exists($key, $body);
+    }
+
+    /**
+     * Get Input Value
+     */
+    public static function input(string $key, mixed $default = null): mixed
+    {
+        $body = self::body();
+
+        return $body[$key] ?? $default;
     }
 }

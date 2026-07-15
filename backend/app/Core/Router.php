@@ -31,33 +31,75 @@ class Router
         $this->routes[$method][rtrim($uri, '/')] = $handler;
     }
 
-    public function dispatch(): void
-    {
-        $method = Request::method();
-        $uri = Request::uri();
+   public function dispatch(): void
+{
+    $method = Request::method();
+    $uri = Request::uri();
 
-        $handler = $this->routes[$method][$uri] ?? null;
+    $handler = null;
+    $params = [];
 
-        if (!$handler) {
-            Response::error("Route not found", 404);
+    if (isset($this->routes[$method][$uri])) {
+
+        $handler = $this->routes[$method][$uri];
+
+    } else {
+
+        foreach ($this->routes[$method] ?? [] as $route => $routeHandler) {
+
+            $pattern = preg_replace(
+                '/\{[a-zA-Z_]+\}/',
+                '([^/]+)',
+                $route
+            );
+
+            $pattern = '#^' . $pattern . '$#';
+
+            if (preg_match($pattern, $uri, $matches)) {
+
+                array_shift($matches);
+
+                $params = $matches;
+
+                $handler = $routeHandler;
+
+                break;
+            }
         }
-
-        if (is_callable($handler)) {
-            call_user_func($handler);
-            return;
-        }
-
-        if (is_array($handler)) {
-
-            [$controller, $action] = $handler;
-
-            $controller = new $controller();
-
-            call_user_func([$controller, $action]);
-
-            return;
-        }
-
-        Response::error("Invalid Route Handler",500);
     }
+
+    if (!$handler) {
+        Response::error("Route not found", 404);
+        return;
+    }
+
+    if (is_callable($handler)) {
+
+        call_user_func_array(
+            $handler,
+            $params
+        );
+
+        return;
+    }
+
+    if (is_array($handler)) {
+
+        [$controller, $action] = $handler;
+
+        $controller = new $controller();
+
+        call_user_func_array(
+            [$controller, $action],
+            $params
+        );
+
+        return;
+    }
+
+    Response::error(
+        "Invalid Route Handler",
+        500
+    );
+}
 }
