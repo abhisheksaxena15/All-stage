@@ -8,9 +8,21 @@ abstract class BaseModel
      * Convert model to array
      */
     public function toArray(): array
-    {
-        return get_object_vars($this);
+{
+    $reflection = new \ReflectionObject($this);
+
+    $data = [];
+
+    foreach ($reflection->getProperties() as $property) {
+
+        $property->setAccessible(true);
+
+        $data[$property->getName()] = $property->getValue($this);
+
     }
+
+    return $data;
+}
 
     /**
      * Hydrate model from database row

@@ -70,4 +70,6 @@ class BrandRepository extends BaseRepository
 
         return $row ? new Brand($row) : null;
     }
+
+    
 }

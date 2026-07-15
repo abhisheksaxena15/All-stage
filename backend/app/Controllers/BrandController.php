@@ -42,13 +42,14 @@ $this->success($brands);
 
         if (!$validation['valid']) {
 
-            $this->error(
-                "Validation Failed",
-                422,
-                $validation['errors']
-            );
+    $this->error(
+        "Validation Failed",
+        422,
+        $validation['errors']
+    );
 
-        }
+    return;
+}
 
         try {
 

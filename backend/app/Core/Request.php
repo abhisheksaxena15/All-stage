@@ -21,13 +21,22 @@ class Request
      * URI
      */
     public static function uri(): string
-    {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+{
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        $uri = rtrim($uri, '/');
+    // Base path of your application
+    $basePath = '/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+    // $basePath = '/allstag/backend/public';
 
-        return $uri ?: '/';
+    // Remove base path
+    if (str_starts_with($uri, $basePath)) {
+        $uri = substr($uri, strlen($basePath));
     }
+
+    $uri = rtrim($uri, '/');
+
+    return $uri ?: '/';
+}
 
     /**
      * JSON Body
