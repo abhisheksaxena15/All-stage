@@ -25,9 +25,9 @@ export interface ProductVariant {
 
   sku: string;
 
-  price: number;
+  selling_price: number;
 
-  stock: number;
+  cost_price: number;
 
 }
 
@@ -51,15 +51,15 @@ export interface Product {
 
   description: string;
 
-  sellingPrice: number;
+  selling_priceselling_price: number;
 
-  comparePrice: number;
+  compareselling_price: number;
 
-  costPrice: number;
+  costselling_price: number;
 
   quantity: number;
 
-  lowStockAlert: number;
+  lowcost_priceAlert: number;
 
   weight: number;
 

@@ -96,7 +96,7 @@ create table public.products (
   title text not null,
   collection text,
   category text not null,           -- 'Candles' | 'Sachets' | 'Resins'
-  price int not null,               -- in paise
+  selling_price int not null,               -- in paise
   mrp int not null,
   image text not null,
   alt_text text,
@@ -107,7 +107,7 @@ create table public.products (
   rating numeric(2,1) default 0,
   review_count int default 0,
   badge text,
-  stock int default 0,
+  cost_price int default 0,
   is_active boolean default true,
   created_at timestamptz default now()
 );
@@ -136,7 +136,7 @@ create table public.order_items (
   order_id uuid not null references public.orders(id) on delete cascade,
   product_id uuid not null references public.products(id),
   title text not null, image text not null,
-  price int not null, qty int not null
+  selling_price int not null, qty int not null
 );
 
 -- Grants (required — PostgREST default-denies)
@@ -218,7 +218,7 @@ or on failure:
 { "data": null, "error": { "code": "UNAUTHORIZED", "message": "..." } }
 ```
 
-**Standard status codes**: 200 OK, 201 Created, 204 No Content, 400 Bad Request (Zod validation), 401 Unauthorized, 403 Forbidden (role check), 404 Not Found, 409 Conflict (stock/duplicate), 422 Unprocessable, 429 Rate Limited, 500 Internal.
+**Standard status codes**: 200 OK, 201 Created, 204 No Content, 400 Bad Request (Zod validation), 401 Unauthorized, 403 Forbidden (role check), 404 Not Found, 409 Conflict (cost_price/duplicate), 422 Unprocessable, 429 Rate Limited, 500 Internal.
 
 ---
 
@@ -241,7 +241,7 @@ Client → createOrder (server fn)
 Client → Razorpay Checkout modal → user pays
 Razorpay → POST /api/public/webhooks/razorpay
    → verifies HMAC (crypto.timingSafeEqual)
-   → updates orders.status='paid', decrements product.stock
+   → updates orders.status='paid', decrements product.cost_price
    → triggers Resend email (order confirmation)
 ```
 
@@ -256,7 +256,7 @@ Idempotency: webhook keyed on `razorpay_payment_id`; duplicate deliveries are no
 - **Input validation** — Zod schema on every server fn `.inputValidator()` and every REST handler.
 - **Rate limiting** — public webhooks and auth-adjacent endpoints wrapped in a Cloudflare KV counter (10 req/min per IP).
 - **Idempotency keys** — `POST /api/orders` accepts `Idempotency-Key` header; stored in `orders.idempotency_key` (unique) so retries return the original order.
-- **Optimistic concurrency** — `products.stock` decrement uses `update ... where stock >= :qty returning *`; caller retries on empty result.
+- **Optimistic concurrency** — `products.cost_price` decrement uses `update ... where cost_price >= :qty returning *`; caller retries on empty result.
 - **Caching** — public product reads served with `Cache-Control: public, s-maxage=60, stale-while-revalidate=300` at the edge.
 - **Backpressure** — checkout is queued if webhook load spikes (Supabase queue table `pending_fulfillments`).
 - **Observability** — every server fn logs `{ requestId, userId, fn, durationMs }`; errors captured via `reportLovableError` and Cloudflare tail logs.
@@ -325,7 +325,7 @@ Envelope shape:
 | ------------------------ | ------------- | ------------------------------- | -------------------------------------------------- |
 | `allstag.orders.v1`      | `orderId`     | `createOrder`, Razorpay webhook | Email, analytics, fulfilment, warehouse ERP        |
 | `allstag.cart.v1`        | `userId`      | `addToCart`, `updateCartQty`    | Abandoned-cart mailer, recommender                 |
-| `allstag.inventory.v1`   | `productId`   | Order webhook, admin restock    | Search index (Meilisearch), low-stock alerts       |
+| `allstag.inventory.v1`   | `productId`   | Order webhook, admin recost_price    | Search index (Meilisearch), low-cost_price alerts       |
 | `allstag.users.v1`       | `userId`      | Signup trigger, `updateProfile` | CRM sync, welcome email                            |
 | `allstag.emails.v1`      | `userId`      | Order / auth flows              | Resend worker (rate-limited, retries)              |
 | `allstag.audit.v1`       | `actorId`     | `promoteUser`, admin mutations  | SIEM / compliance log                              |
@@ -381,7 +381,7 @@ brokers ──▶ HTTP sink connector ──▶ POST /api/public/events/consume
               ┌─────────────────────────────┼─────────────────────────────┐
               ▼                             ▼                             ▼
       orders handlers              cart handlers                users / inventory
-      (email, inventory)           (recs, abandoned)            (welcome, CRM, stock)
+      (email, inventory)           (recs, abandoned)            (welcome, CRM, cost_price)
 ```
 
 Route: **`src/routes/api.public.events.consume.ts`** — verifies
@@ -395,7 +395,7 @@ Handler map by topic:
 | ---------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
 | `allstag.orders.v1`    | `order.created`, `order.paid`, `order.fulfilled`     | Enqueue confirmation email; emit inventory deltas     |
 | `allstag.cart.v1`      | `cart.item_added`, `cart.item_removed`, `cart.abandoned` | Personalization score; abandoned-cart email       |
-| `allstag.inventory.v1` | `inventory.reserved`, `inventory.restocked`          | UPDATE `public.products.stock`                        |
+| `allstag.inventory.v1` | `inventory.reserved`, `inventory.recost_priceed`          | UPDATE `public.products.cost_price`                        |
 | `allstag.users.v1`     | `user.signed_up`, `user.updated`                     | Welcome email; CRM sync                               |
 | `allstag.emails.v1`    | `email.queued`                                       | Resend API call (`RESEND_API_KEY`)                    |
 | `allstag.audit.v1`     | `*` catch-all                                        | Structured log to observability sink                  |

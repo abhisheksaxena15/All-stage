@@ -19,15 +19,14 @@ interface FormState {
   sku: string;
   short_description: string;
   description: string;
-  price: string;
-  discount_price: string;
-  stock: string;
+ selling_price: string;
+compare_price: string;
+cost_price: string;
   category_id: string;
   subcategory_id: string;
   brand_id: string;
   featured: boolean;
-  status: "active" | "inactive";
-}
+status: "ACTIVE" | "DRAFT" | "ARCHIVED";}
 
 const empty: FormState = {
   name: "",
@@ -35,9 +34,9 @@ const empty: FormState = {
   sku: "",
   short_description: "",
   description: "",
-  price: "",
-  discount_price: "",
-  stock: "0",
+ selling_price: "",
+compare_price: "",
+cost_price: "",
   category_id: "",
   subcategory_id: "",
   brand_id: "",
@@ -77,9 +76,9 @@ export function ProductForm({ productId }: { productId?: string }) {
       sku: p.sku ?? "",
       short_description: p.short_description ?? "",
       description: p.description ?? "",
-      price: p.price != null ? String(p.price) : "",
-      discount_price: p.discount_price != null ? String(p.discount_price) : "",
-      stock: String(p.stock ?? 0),
+      selling_price: p.selling_price != null ? String(p.selling_price) : "",
+      compare_price: p.compare_price != null ? String(p.compare_price) : "",
+      cost_price: String(p.cost_price ?? 0),
       category_id: p.category_id != null ? String(p.category_id) : "",
       subcategory_id: p.subcategory_id != null ? String(p.subcategory_id) : "",
       brand_id: p.brand_id != null ? String(p.brand_id) : "",
@@ -121,10 +120,10 @@ export function ProductForm({ productId }: { productId?: string }) {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
     if (!form.slug.trim()) e.slug = "Required";
-    if (!form.price || Number(form.price) < 0) e.price = "Enter a valid price";
-    if (form.discount_price && Number(form.discount_price) >= Number(form.price))
-      e.discount_price = "Must be lower than price";
-    if (Number(form.stock) < 0) e.stock = "Cannot be negative";
+    if (!form.selling_price || Number(form.selling_price) < 0) e.selling_price = "Enter a valid selling_price";
+    if (form.compare_price && Number(form.compare_price) >= Number(form.selling_price))
+      e.compare_price = "Must be lower than selling_price";
+    if (Number(form.cost_price) < 0) e.cost_price = "Cannot be negative";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -252,31 +251,31 @@ export function ProductForm({ productId }: { productId?: string }) {
           <Card className="p-5">
             <h3 className="mb-4 text-sm font-semibold">Pricing & inventory</h3>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Price (₹)" required error={errors.price}>
+              <Field label="selling_price (₹)" required error={errors.selling_price}>
                 <Input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.price}
-                  onChange={(e) => update({ price: e.target.value })}
+                  value={form.selling_price}
+                  onChange={(e) => update({ selling_price: e.target.value })}
                 />
               </Field>
-              <Field label="Discount price (₹)" error={errors.discount_price}>
+              <Field label="Discount selling_price (₹)" error={errors.compare_price}>
                 <Input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.discount_price}
-                  onChange={(e) => update({ discount_price: e.target.value })}
+                  value={form.compare_price}
+                  onChange={(e) => update({ compare_price: e.target.value })}
                 />
               </Field>
-              <Field label="Stock quantity" required error={errors.stock}>
+              <Field label="cost_price quantity" required error={errors.cost_price}>
                 <Input
                   type="number"
                   min="0"
                   step="1"
-                  value={form.stock}
-                  onChange={(e) => update({ stock: e.target.value })}
+                  value={form.cost_price}
+                  onChange={(e) => update({ cost_price: e.target.value })}
                 />
               </Field>
             </div>
@@ -330,10 +329,11 @@ export function ProductForm({ productId }: { productId?: string }) {
               <Field label="Status">
                 <Select
                   value={form.status}
-                  onChange={(e) => update({ status: e.target.value as "active" | "inactive" })}
+                  onChange={(e) => update({ status: e.target.value as "ACTIVE" | "DRAFT" | "ARCHIVED" })}
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="ARCHIVED">Archived</option>
                 </Select>
               </Field>
               <label className="flex items-center gap-2 text-sm">

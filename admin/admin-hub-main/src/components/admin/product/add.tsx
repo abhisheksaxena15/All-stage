@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import ProductForm from "@/components/admin/product/ProductForm";
 
-export const Route = createFileRoute("/admin/products/add")({
+export const Route = createFileRoute("/admin/product/add")({
   component: AddProductPage,
 });
 

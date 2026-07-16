@@ -121,7 +121,7 @@ function Home() {
         <div className="mb-8 flex items-end justify-between">
           <h2 className="text-4xl lg:text-6xl">Kept coming back</h2>
           <div className="hidden text-xs font-mono uppercase tracking-widest text-muted-foreground sm:block">
-            Bestsellers · Restocked
+            Bestsellers · Recost_priceed
           </div>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">

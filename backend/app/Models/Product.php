@@ -22,11 +22,11 @@ class Product extends BaseModel
 
     private ?string $description = null;
 
-    private float $sellingPrice = 0;
+    private float $selling_priceselling_price = 0;
 
-    private float $comparePrice = 0;
+    private float $compareselling_price = 0;
 
-    private float $costPrice = 0;
+    private float $costselling_price = 0;
 
     private string $status = 'DRAFT';
 
@@ -66,11 +66,11 @@ class Product extends BaseModel
 
         $this->description = $data['description'] ?? null;
 
-        $this->sellingPrice = (float)($data['selling_price'] ?? 0);
+        $this->selling_priceselling_price = (float)($data['selling_price'] ?? 0);
 
-        $this->comparePrice = (float)($data['compare_price'] ?? 0);
+        $this->compareselling_price = (float)($data['compare_price'] ?? 0);
 
-        $this->costPrice = (float)($data['cost_price'] ?? 0);
+        $this->costselling_price = (float)($data['cost_price'] ?? 0);
 
         $this->status = $data['status'] ?? 'DRAFT';
 
@@ -111,14 +111,14 @@ class Product extends BaseModel
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $value): void { $this->description = $value; }
 
-    public function getSellingPrice(): float { return $this->sellingPrice; }
-    public function setSellingPrice(float $value): void { $this->sellingPrice = $value; }
+    public function getselling_priceselling_price(): float { return $this->selling_priceselling_price; }
+    public function setselling_priceselling_price(float $value): void { $this->selling_priceselling_price = $value; }
 
-    public function getComparePrice(): float { return $this->comparePrice; }
-    public function setComparePrice(float $value): void { $this->comparePrice = $value; }
+    public function getCompareselling_price(): float { return $this->compareselling_price; }
+    public function setCompareselling_price(float $value): void { $this->compareselling_price = $value; }
 
-    public function getCostPrice(): float { return $this->costPrice; }
-    public function setCostPrice(float $value): void { $this->costPrice = $value; }
+    public function getCostselling_price(): float { return $this->costselling_price; }
+    public function setCostselling_price(float $value): void { $this->costselling_price = $value; }
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $value): void { $this->status = $value; }
@@ -154,11 +154,11 @@ class Product extends BaseModel
 
         'description' => $this->description,
 
-        'selling_price' => $this->sellingPrice,
+        'selling_price' => $this->selling_priceselling_price,
 
-        'compare_price' => $this->comparePrice,
+        'compare_price' => $this->compareselling_price,
 
-        'cost_price' => $this->costPrice,
+        'cost_price' => $this->costselling_price,
 
         'status' => $this->status,
 

@@ -80,8 +80,8 @@ function BulkImportPage() {
             </a>
           </div>
           <div className="mt-4 rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">
-            <strong className="text-foreground">Required columns:</strong> name, sku, price, stock, status.{" "}
-            <strong className="text-foreground">Optional:</strong> slug, discount_price, category, subcategory,
+            <strong className="text-foreground">Required columns:</strong> name, sku, selling_price, cost_price, status.{" "}
+            <strong className="text-foreground">Optional:</strong> slug, compare_price, category, subcategory,
             brand, short_description, description, featured, image_urls (pipe-separated).
           </div>
         </Card>

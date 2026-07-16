@@ -70,11 +70,11 @@ class ProductRepository extends BaseRepository
 
             ':description' => $product->getDescription(),
 
-            ':selling_price' => $product->getSellingPrice(),
+            ':selling_price' => $product->getselling_priceselling_price(),
 
-            ':compare_price' => $product->getComparePrice(),
+            ':compare_price' => $product->getCompareselling_price(),
 
-            ':cost_price' => $product->getCostPrice(),
+            ':cost_price' => $product->getCostselling_price(),
 
             ':status' => $product->getStatus(),
 
@@ -149,11 +149,11 @@ class ProductRepository extends BaseRepository
 
             ':description'=>$product->getDescription(),
 
-            ':selling_price'=>$product->getSellingPrice(),
+            ':selling_price'=>$product->getselling_priceselling_price(),
 
-            ':compare_price'=>$product->getComparePrice(),
+            ':compare_price'=>$product->getCompareselling_price(),
 
-            ':cost_price'=>$product->getCostPrice(),
+            ':cost_price'=>$product->getCostselling_price(),
 
             ':status'=>$product->getStatus(),
 

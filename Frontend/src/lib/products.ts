@@ -13,7 +13,7 @@ export type Product = {
   title: string;
   collection: string;
   category: ProductCategory;
-  price: number;
+  selling_price: number;
   mrp: number;
   image: string;
   altText: string;
@@ -37,7 +37,7 @@ export const PRODUCTS: Product[] = [
     title: "Giraffe Oversized Tee",
     collection: "Wild Type",
     category: "Tees",
-    price: 899,
+    selling_price: 899,
     mrp: 1799,
     image: giraffe,
     altText: "Bone-coloured oversized tee with a large hand-drawn giraffe graphic on the chest",
@@ -55,7 +55,7 @@ export const PRODUCTS: Product[] = [
     title: "Bad Ideas Graphic Tee",
     collection: "Ink Series",
     category: "Tees",
-    price: 999,
+    selling_price: 999,
     mrp: 1999,
     image: badIdeas,
     altText: "Black heavyweight tee with white 'Bad Ideas' typography print",
@@ -73,7 +73,7 @@ export const PRODUCTS: Product[] = [
     title: "Olive Heavyweight Tee",
     collection: "Base Layer",
     category: "Tees",
-    price: 849,
+    selling_price: 849,
     mrp: 1699,
     image: olive,
     altText: "Olive green heavyweight cotton tee with ribbed collar",
@@ -90,7 +90,7 @@ export const PRODUCTS: Product[] = [
     title: "Camp Collar Half-Sleeve Shirt",
     collection: "Summer Cut",
     category: "Shirts",
-    price: 1499,
+    selling_price: 1499,
     mrp: 2999,
     image: shirt,
     altText: "Cream camp-collar half-sleeve shirt with wooden buttons",
@@ -107,7 +107,7 @@ export const PRODUCTS: Product[] = [
     title: "Walnut Cord Overshirt",
     collection: "Winter Drop",
     category: "Shirts",
-    price: 2499,
+    selling_price: 2499,
     mrp: 4999,
     image: walnut,
     altText: "Walnut brown corduroy overshirt with chest pockets",
@@ -118,14 +118,14 @@ export const PRODUCTS: Product[] = [
     fit: "Boxy · Layerable",
     rating: 4.9,
     reviewCount: 54,
-    badge: "LOW STOCK",
+    badge: "LOW cost_price",
   },
   {
     handle: "blaze-racer-tank",
     title: "Blaze Racer Tank",
     collection: "Molten Drop",
     category: "Tanks",
-    price: 699,
+    selling_price: 699,
     mrp: 1399,
     image: blaze,
     altText: "Molten red racer-back tank with raw-cut armholes",
@@ -142,7 +142,7 @@ export const PRODUCTS: Product[] = [
     title: "Essential Rib Tank",
     collection: "Base Layer",
     category: "Tanks",
-    price: 599,
+    selling_price: 599,
     mrp: 1199,
     image: tank,
     altText: "Ink black ribbed cotton tank top",

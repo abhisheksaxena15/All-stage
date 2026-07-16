@@ -65,7 +65,7 @@ function CollectionPage() {
       <section className="mx-auto max-w-[1400px] px-4 py-12 lg:px-8">
         {items.length === 0 ? (
           <div className="py-24 text-center">
-            <div className="text-display text-4xl">Restocking soon</div>
+            <div className="text-display text-4xl">Recost_priceing soon</div>
             <p className="mt-2 text-muted-foreground">This collection drops next week.</p>
           </div>
         ) : (

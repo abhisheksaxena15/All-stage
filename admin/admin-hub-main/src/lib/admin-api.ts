@@ -63,7 +63,8 @@ export async function adminFetch<T = unknown>(
   init: RequestInit = {},
 ): Promise<T> {
   const url = path.startsWith("http") ? path : `${ADMIN_API_BASE}${path}`;
-  const token = getAdminToken();
+  console.log("ADMIN_API_BASE =", ADMIN_API_BASE);
+  console.log("REQUEST URL =", url); const token = getAdminToken();
   const headers = new Headers(init.headers);
   if (!headers.has("Accept")) headers.set("Accept", "application/json");
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {

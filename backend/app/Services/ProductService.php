@@ -58,15 +58,15 @@ class ProductService
             $data['description'] ?? null
         );
 
-        $product->setSellingPrice(
+        $product->setselling_priceselling_price(
             (float)$data['selling_price']
         );
 
-        $product->setComparePrice(
+        $product->setCompareselling_price(
             (float)($data['compare_price'] ?? 0)
         );
 
-        $product->setCostPrice(
+        $product->setCostselling_price(
             (float)($data['cost_price'] ?? 0)
         );
 
@@ -131,15 +131,15 @@ class ProductService
             $data['description'] ?? null
         );
 
-        $product->setSellingPrice(
+        $product->setselling_priceselling_price(
             (float)$data['selling_price']
         );
 
-        $product->setComparePrice(
+        $product->setCompareselling_price(
             (float)($data['compare_price'] ?? 0)
         );
 
-        $product->setCostPrice(
+        $product->setCostselling_price(
             (float)($data['cost_price'] ?? 0)
         );
 

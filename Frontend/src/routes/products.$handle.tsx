@@ -17,7 +17,7 @@ export const Route = createFileRoute("/products/$handle")({
     return {
       meta: [
         { title: `${product.title} — Allstag` },
-        { name: "description", content: `${product.title}. ${product.fabric}, ${product.gsm}g, ${product.fit}. ₹${product.price}.` },
+        { name: "description", content: `${product.title}. ${product.fabric}, ${product.gsm}g, ${product.fit}. ₹${product.selling_price}.` },
         { property: "og:title", content: `${product.title} — Allstag` },
         { property: "og:description", content: `${product.fabric} · ${product.gsm}g · ${product.fit}` },
         { property: "og:image", content: product.image },
@@ -40,7 +40,7 @@ function ProductPage() {
   const [openFaq, setOpenFaq] = useState(false);
   const [pincode, setPincode] = useState("");
   const [eta, setEta] = useState<string | null>(null);
-  const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const off = Math.round(((product.mrp - product.selling_price) / product.mrp) * 100);
 
   const requireSize = () => {
     if (!size) {
@@ -103,8 +103,8 @@ function ProductPage() {
           </div>
 
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="text-3xl font-bold">₹{product.price}</span>
-            <span className="strike-price text-lg">₹{product.mrp}</span>
+            <span className="text-3xl font-bold">₹{product.selling_price}</span>
+            <span className="strike-selling_price text-lg">₹{product.mrp}</span>
             <span className="bg-molten/10 px-2 py-0.5 text-xs font-bold text-molten">-{off}%</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Inclusive of all taxes · Shipping calculated at checkout</p>

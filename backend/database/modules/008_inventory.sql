@@ -10,7 +10,7 @@ CREATE TABLE inventory (
 
     reserved_quantity INT NOT NULL DEFAULT 0,
 
-    low_stock_threshold INT DEFAULT 10,
+    low_cost_price_threshold INT DEFAULT 10,
 
     warehouse VARCHAR(150) DEFAULT 'Main Warehouse',
 

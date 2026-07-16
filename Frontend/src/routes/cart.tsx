@@ -79,8 +79,8 @@ function CartPage() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-sm font-bold">₹{i.price * i.qty}</div>
-                      <div className="strike-price text-xs">₹{i.mrp * i.qty}</div>
+                      <div className="text-sm font-bold">₹{i.selling_price * i.qty}</div>
+                      <div className="strike-selling_price text-xs">₹{i.mrp * i.qty}</div>
                     </div>
                     <button
                       onClick={() => removeItem(i.handle, i.size)}

@@ -141,23 +141,23 @@ function ProductsListPage() {
       render: (r) => <span className="text-sm">{r.brand_name ?? "—"}</span>,
     },
     {
-      key: "price",
-      header: "Price",
+      key: "selling_price",
+      header: "selling_price",
       sortable: true,
       className: "text-right",
       headerClassName: "text-right",
       render: (r) => (
         <div className="text-right">
-          <div className="font-medium">{inr(r.discount_price ?? r.price)}</div>
-          {r.discount_price != null && r.discount_price !== r.price && (
-            <div className="text-xs text-muted-foreground line-through">{inr(r.price)}</div>
+          <div className="font-medium">{inr(r.compare_price ?? r.selling_price)}</div>
+          {r.compare_price != null && r.compare_price !== r.selling_price && (
+            <div className="text-xs text-muted-foreground line-through">{inr(r.selling_price)}</div>
           )}
         </div>
       ),
     },
     {
-      key: "stock",
-      header: "Stock",
+      key: "cost_price",
+      header: "cost_price",
       sortable: true,
       className: "text-right",
       headerClassName: "text-right",
@@ -165,10 +165,10 @@ function ProductsListPage() {
         <div
           className={cn(
             "text-right text-sm font-medium",
-            r.stock <= 0 ? "text-red-600" : r.stock < 5 ? "text-amber-600" : "",
+            r.cost_price <= 0 ? "text-red-600" : r.cost_price < 5 ? "text-amber-600" : "",
           )}
         >
-          {r.stock}
+          {r.cost_price}
         </div>
       ),
     },
@@ -221,7 +221,7 @@ function ProductsListPage() {
     <div className="mx-auto max-w-[1400px]">
       <PageHeader
         title="Products"
-        description="Manage catalog, pricing, stock and media."
+        description="Manage catalog, pricing, cost_price and media."
         actions={
           <>
             <Link

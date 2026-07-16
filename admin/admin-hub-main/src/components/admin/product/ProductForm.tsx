@@ -20,12 +20,12 @@ export default function ProductForm() {
     shortDescription: "",
     description: "",
 
-    sellingPrice: 0,
-    comparePrice: 0,
-    costPrice: 0,
+    selling_priceselling_price: 0,
+    compareselling_price: 0,
+    costselling_price: 0,
 
     quantity: 0,
-    lowStockAlert: 5,
+    lowcost_priceAlert: 5,
 
     weight: 0,
     length: 0,

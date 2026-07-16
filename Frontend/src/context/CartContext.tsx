@@ -20,7 +20,7 @@ export type CartItem = {
   size: string;
   title: string;
   image: string;
-  price: number;
+  selling_price: number;
   mrp: number;
   qty: number;
 };
@@ -60,8 +60,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartCtx>(() => {
     const count = items.reduce((n, i) => n + i.qty, 0);
-    const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
-    const savings = items.reduce((n, i) => n + (i.mrp - i.price) * i.qty, 0);
+    const subtotal = items.reduce((n, i) => n + i.selling_price * i.qty, 0);
+    const savings = items.reduce((n, i) => n + (i.mrp - i.selling_price) * i.qty, 0);
     return {
       items,
       count,
@@ -84,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               size,
               title: product.title,
               image: product.image,
-              price: product.price,
+              selling_price: product.selling_price,
               mrp: product.mrp,
               qty,
             },

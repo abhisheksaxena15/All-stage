@@ -46,9 +46,9 @@ export interface Product {
   sku?: string | null;
   description?: string | null;
   short_description?: string | null;
-  price: number;
-  discount_price?: number | null;
-  stock: number;
+  selling_price: number;
+  compare_price?: number | null;
+  cost_price: number;
   category_id?: number | string | null;
   category_name?: string;
   subcategory_id?: number | string | null;

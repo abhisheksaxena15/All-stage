@@ -42,15 +42,22 @@ class Request
      * JSON Body
      */
     public static function body(): array
-    {
-        $input = file_get_contents("php://input");
-
-        if (!$input) {
-            return [];
-        }
-
-        return json_decode($input, true) ?? [];
+{
+    if (
+        isset($_SERVER['CONTENT_TYPE']) &&
+        str_contains($_SERVER['CONTENT_TYPE'], 'multipart/form-data')
+    ) {
+        return $_POST;
     }
+
+    $input = file_get_contents("php://input");
+
+    if (!$input) {
+        return [];
+    }
+
+    return json_decode($input, true) ?? [];
+}
 
     /**
      * Query Parameters
