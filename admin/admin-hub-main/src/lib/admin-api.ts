@@ -15,6 +15,10 @@ export const ADMIN_API_BASE: string =
   (import.meta.env.VITE_ADMIN_API_URL as string | undefined) ??
   "http://localhost:8000/api/admin";
 
+/** Auth endpoints live at /api/auth, not /api/admin. */
+export const AUTH_API_BASE: string =
+  ADMIN_API_BASE.replace(/\/api\/admin\/?$/, "/api/auth");
+
 export function getAdminToken(): string | null {
   if (typeof window === "undefined") return null;
   return (
@@ -62,7 +66,7 @@ export async function adminFetch<T = unknown>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const url = path.startsWith("http") ? path : `${ADMIN_API_BASE}${path}`;
+  const url = path.startsWith("http") ? path : path.startsWith("/") ? path : `${ADMIN_API_BASE}${path}`;
   const token = getAdminToken();
   const headers = new Headers(init.headers);
   if (!headers.has("Accept")) headers.set("Accept", "application/json");
