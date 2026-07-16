@@ -14,7 +14,11 @@ class Request
      */
     public static function method(): string
     {
-        return strtoupper($_SERVER['REQUEST_METHOD']);
+        $method = strtoupper($_SERVER['REQUEST_METHOD']);
+        if ($method === 'POST' && isset($_POST['_method'])) {
+            return strtoupper($_POST['_method']);
+        }
+        return $method;
     }
 
     /**

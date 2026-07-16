@@ -21,12 +21,38 @@ class ProductController extends BaseController
      */
     public function index(): void
     {
+        $page = (int) Request::query('page');
+        if ($page <= 0) $page = 1;
+
+        $perPage = (int) Request::query('per_page');
+        if ($perPage <= 0) $perPage = 25;
+
+        $filters = [
+            'page' => $page,
+            'per_page' => $perPage,
+            'limit' => $perPage,
+            'offset' => ($page - 1) * $perPage,
+            'search' => Request::query('search'),
+            'status' => Request::query('status'),
+            'category_id' => Request::query('category_id'),
+            'brand_id' => Request::query('brand_id'),
+            'sort' => Request::query('sort'),
+        ];
+
+        $productsList = $this->service->getAll($filters);
+        $total = $this->service->getCount($filters);
+
         $products = array_map(
             fn($product) => $product->toArray(),
-            $this->service->getAll()
+            $productsList
         );
 
-        $this->success($products);
+        $this->success([
+            'data' => $products,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage
+        ]);
     }
 /**
  * GET /products/{id}

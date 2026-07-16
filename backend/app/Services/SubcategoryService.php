@@ -39,8 +39,11 @@ class SubcategoryService
         return $this->repository->findById($id);
     }
 
-    public function getAll(): array
+    public function getAll(?int $categoryId = null): array
     {
+        if ($categoryId !== null) {
+            return $this->repository->findByCategoryId($categoryId);
+        }
         return $this->repository->findAll();
     }
 }

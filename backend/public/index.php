@@ -1,15 +1,21 @@
 <?php
 declare(strict_types=1);
 
-$allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:8081",
-];
-
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-if (in_array($origin, $allowedOrigins, true)) {
-    header("Access-Control-Allow-Origin: $origin");
+if (!empty($origin)) {
+    if (preg_match('/^http:\/\/localhost(:\d+)?$/', $origin)) {
+        header("Access-Control-Allow-Origin: $origin");
+    } else {
+        $allowedOrigins = [
+            "http://localhost:5173",
+            "http://localhost:8081",
+            "http://localhost:8082",
+        ];
+        if (in_array($origin, $allowedOrigins, true)) {
+            header("Access-Control-Allow-Origin: $origin");
+        }
+    }
 }
 
 header("Access-Control-Allow-Credentials: true");

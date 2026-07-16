@@ -22,11 +22,11 @@ class Product extends BaseModel
 
     private ?string $description = null;
 
-    private float $selling_priceselling_price = 0;
+    private float $sellingPrice = 0;
 
-    private float $compareselling_price = 0;
+    private float $comparePrice = 0;
 
-    private float $costselling_price = 0;
+    private float $costPrice = 0;
 
     private string $status = 'DRAFT';
 
@@ -35,6 +35,14 @@ class Product extends BaseModel
     private bool $newArrival = false;
 
     private bool $bestSeller = false;
+
+    private ?string $brandName = null;
+
+    private ?string $categoryName = null;
+
+    private array $images = [];
+
+    private ?string $primaryImageUrl = null;
 
     public function __construct(array $data = [])
 {
@@ -66,11 +74,11 @@ class Product extends BaseModel
 
         $this->description = $data['description'] ?? null;
 
-        $this->selling_priceselling_price = (float)($data['selling_price'] ?? 0);
+        $this->sellingPrice = (float)($data['selling_price'] ?? 0);
 
-        $this->compareselling_price = (float)($data['compare_price'] ?? 0);
+        $this->comparePrice = (float)($data['compare_price'] ?? 0);
 
-        $this->costselling_price = (float)($data['cost_price'] ?? 0);
+        $this->costPrice = (float)($data['cost_price'] ?? 0);
 
         $this->status = $data['status'] ?? 'DRAFT';
 
@@ -79,6 +87,18 @@ class Product extends BaseModel
         $this->newArrival = (bool)($data['new_arrival'] ?? false);
 
         $this->bestSeller = (bool)($data['best_seller'] ?? false);
+
+        if (isset($data['brand_name'])) {
+            $this->brandName = $data['brand_name'];
+        }
+
+        if (isset($data['category_name'])) {
+            $this->categoryName = $data['category_name'];
+        }
+
+        if (isset($data['primary_image_url'])) {
+            $this->primaryImageUrl = $data['primary_image_url'];
+        }
     }
 }
 
@@ -111,14 +131,26 @@ class Product extends BaseModel
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $value): void { $this->description = $value; }
 
-    public function getselling_priceselling_price(): float { return $this->selling_priceselling_price; }
-    public function setselling_priceselling_price(float $value): void { $this->selling_priceselling_price = $value; }
+    public function getSellingPrice(): float { return $this->sellingPrice; }
+    public function setSellingPrice(float $value): void { $this->sellingPrice = $value; }
 
-    public function getCompareselling_price(): float { return $this->compareselling_price; }
-    public function setCompareselling_price(float $value): void { $this->compareselling_price = $value; }
+    public function getComparePrice(): float { return $this->comparePrice; }
+    public function setComparePrice(float $value): void { $this->comparePrice = $value; }
 
-    public function getCostselling_price(): float { return $this->costselling_price; }
-    public function setCostselling_price(float $value): void { $this->costselling_price = $value; }
+    public function getCostPrice(): float { return $this->costPrice; }
+    public function setCostPrice(float $value): void { $this->costPrice = $value; }
+
+    public function getBrandName(): ?string { return $this->brandName; }
+    public function setBrandName(?string $value): void { $this->brandName = $value; }
+
+    public function getCategoryName(): ?string { return $this->categoryName; }
+    public function setCategoryName(?string $value): void { $this->categoryName = $value; }
+
+    public function getImages(): array { return $this->images; }
+    public function setImages(array $value): void { $this->images = $value; }
+
+    public function getPrimaryImageUrl(): ?string { return $this->primaryImageUrl; }
+    public function setPrimaryImageUrl(?string $value): void { $this->primaryImageUrl = $value; }
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $value): void { $this->status = $value; }
@@ -154,11 +186,11 @@ class Product extends BaseModel
 
         'description' => $this->description,
 
-        'selling_price' => $this->selling_priceselling_price,
+        'selling_price' => $this->sellingPrice,
 
-        'compare_price' => $this->compareselling_price,
+        'compare_price' => $this->comparePrice,
 
-        'cost_price' => $this->costselling_price,
+        'cost_price' => $this->costPrice,
 
         'status' => $this->status,
 
@@ -166,7 +198,15 @@ class Product extends BaseModel
 
         'new_arrival' => $this->newArrival,
 
-        'best_seller' => $this->bestSeller
+        'best_seller' => $this->bestSeller,
+
+        'brand_name' => $this->brandName,
+
+        'category_name' => $this->categoryName,
+
+        'images' => array_map(fn($img) => $img->toArray(), $this->images),
+
+        'primary_image_url' => $this->primaryImageUrl
 
     ];
 }

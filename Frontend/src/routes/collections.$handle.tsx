@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { getByCategory, CATEGORIES } from "@/lib/products";
+import { getByCategory, CATEGORIES, useProductsList } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 export const Route = createFileRoute("/collections/$handle")({
@@ -20,7 +20,10 @@ export const Route = createFileRoute("/collections/$handle")({
 function CollectionPage() {
   const { handle } = Route.useParams();
   const cat = CATEGORIES.find((c) => c.handle === handle);
-  const items = getByCategory(handle);
+  const { products } = useProductsList();
+  const items = handle.toLowerCase() === "all" || handle.toLowerCase() === "shop-all"
+    ? products
+    : products.filter((p) => p.category.toLowerCase() === handle.toLowerCase());
 
   return (
     <div>

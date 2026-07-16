@@ -15,6 +15,9 @@ export interface ImageUploaderProps {
   maxSizeMB?: number;
   accept?: string;
   label?: string;
+  primaryId?: string | number | null;
+  primaryIndex?: number | null;
+  onSetPrimary?: (type: "existing" | "new", val: string | number) => void;
 }
 
 export function ImageUploader({
@@ -26,6 +29,9 @@ export function ImageUploader({
   maxSizeMB = 5,
   accept = "image/*",
   label,
+  primaryId = null,
+  primaryIndex = null,
+  onSetPrimary,
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +97,8 @@ export function ImageUploader({
               src={img.url}
               onRemove={onRemoveExisting ? () => onRemoveExisting(img.id, idx) : undefined}
               badge="Saved"
+              isPrimary={primaryId != null && img.id != null && String(img.id) === String(primaryId)}
+              onMakePrimary={onSetPrimary && img.id != null ? () => onSetPrimary("existing", img.id) : undefined}
             />
           ))}
           {value.map((f, idx) => (
@@ -99,6 +107,8 @@ export function ImageUploader({
               src={URL.createObjectURL(f)}
               onRemove={() => onChange(value.filter((_, i) => i !== idx))}
               badge="New"
+              isPrimary={primaryIndex !== null && idx === primaryIndex}
+              onMakePrimary={onSetPrimary ? () => onSetPrimary("new", idx) : undefined}
             />
           ))}
         </div>
@@ -111,13 +121,22 @@ function PreviewTile({
   src,
   onRemove,
   badge,
+  isPrimary,
+  onMakePrimary,
 }: {
   src: string;
   onRemove?: () => void;
   badge?: string;
+  isPrimary?: boolean;
+  onMakePrimary?: () => void;
 }) {
   return (
-    <div className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted">
+    <div
+      className={cn(
+        "group relative aspect-square overflow-hidden rounded-md border bg-muted transition-all",
+        isPrimary ? "border-amber-400 ring-2 ring-amber-400/50" : "border-border",
+      )}
+    >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt="" className="h-full w-full object-cover" />
@@ -131,6 +150,28 @@ function PreviewTile({
           {badge}
         </span>
       )}
+
+      {onMakePrimary && (
+        <button
+          type="button"
+          onClick={onMakePrimary}
+          className={cn(
+            "absolute bottom-1 left-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 transition-all hover:scale-110",
+            isPrimary ? "opacity-100 text-amber-400" : "text-white opacity-0 group-hover:opacity-100",
+          )}
+          title={isPrimary ? "Primary Thumbnail" : "Make Thumbnail"}
+        >
+          <svg
+            className={cn("h-3.5 w-3.5", isPrimary ? "fill-amber-400" : "fill-none")}
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+        </button>
+      )}
+
       {onRemove && (
         <button
           type="button"
@@ -144,3 +185,4 @@ function PreviewTile({
     </div>
   );
 }
+

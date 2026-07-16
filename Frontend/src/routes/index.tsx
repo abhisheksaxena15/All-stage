@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Truck, ShieldCheck, RefreshCw, MessageCircle, Star } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
-import { PRODUCTS } from "@/lib/products";
+import { PRODUCTS, useProductsList } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Countdown } from "@/components/site/Countdown";
 
@@ -18,8 +18,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const featured = PRODUCTS.slice(0, 4);
-  const rest = PRODUCTS.slice(4);
+  const { products } = useProductsList();
+  const featured = products.slice(0, 4);
+  const rest = products.slice(4);
   return (
     <div>
       {/* HERO */}

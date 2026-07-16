@@ -156,6 +156,94 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
+import { useState, useEffect } from "react";
+
+export function mapDbProductToStorefront(dbProd: any): Product {
+  let imgUrl = dbProd.primary_image_url;
+  if (!imgUrl && dbProd.images && dbProd.images.length > 0) {
+    imgUrl = dbProd.images[0].image_url;
+  }
+  if (!imgUrl) {
+    imgUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=1000";
+  }
+
+  return {
+    handle: dbProd.slug || `prod-${dbProd.id}`,
+    title: dbProd.name || "Untitled Product",
+    collection: dbProd.brand_name || "Streetwear",
+    category: (dbProd.category_name || "Tees") as ProductCategory,
+    selling_price: Number(dbProd.selling_price) || 0,
+    mrp: Number(dbProd.compare_price) || Number(dbProd.selling_price) || 0,
+    image: imgUrl,
+    altText: dbProd.short_description || dbProd.name || "",
+    sizes: ["S", "M", "L", "XL"],
+    color: "Solid",
+    fabric: "100% Cotton",
+    gsm: 240,
+    fit: "Oversized Fit",
+    rating: 4.8,
+    reviewCount: 120,
+    badge: dbProd.featured ? "FEATURED" : undefined,
+  };
+}
+
+export function useProductsList() {
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data && json.data.data) {
+          const dbProducts = json.data.data.map(mapDbProductToStorefront);
+          const dbHandles = new Set(dbProducts.map((p: any) => p.handle));
+          const filteredHardcoded = PRODUCTS.filter((p) => !dbHandles.has(p.handle));
+          setProducts([...dbProducts, ...filteredHardcoded]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load products from backend:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  return { products, loading };
+}
+
+export function useCategoriesList() {
+  const [categories, setCategories] = useState<{ handle: string; label: string }[]>(CATEGORIES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/categories")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          const dbCats = json.data.map((c: any) => ({
+            handle: c.slug || `cat-${c.id}`,
+            label: c.name || "Untitled Category",
+          }));
+          const shopAll = { handle: "shop-all", label: "Shop All" };
+          const dbHandles = new Set(dbCats.map((c: any) => c.handle));
+          const filteredHardcoded = CATEGORIES.filter((c) => c.handle !== "shop-all" && !dbHandles.has(c.handle));
+          
+          setCategories([shopAll, ...dbCats, ...filteredHardcoded]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load categories from backend:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  return { categories, loading };
+}
+
 export function getProduct(handle: string) {
   return PRODUCTS.find((p) => p.handle === handle);
 }

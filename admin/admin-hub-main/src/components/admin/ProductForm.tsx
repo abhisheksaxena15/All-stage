@@ -59,6 +59,18 @@ export function ProductForm({ productId }: { productId?: string }) {
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<(string | number)[]>([]);
   const [slugDirty, setSlugDirty] = useState(false);
+  const [primaryImageId, setPrimaryImageId] = useState<string | number | null>(null);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number | null>(null);
+
+  const handleSetPrimary = (type: "existing" | "new", val: string | number) => {
+    if (type === "existing") {
+      setPrimaryImageId(val);
+      setPrimaryImageIndex(null);
+    } else {
+      setPrimaryImageId(null);
+      setPrimaryImageIndex(Number(val));
+    }
+  };
 
   const existing = useQuery({
     queryKey: ["admin", "products", productId],
@@ -87,6 +99,15 @@ export function ProductForm({ productId }: { productId?: string }) {
     });
     setExistingImages(p.images ?? []);
     setSlugDirty(true);
+
+    const primaryImg = (p.images ?? []).find((i) => i.is_primary);
+    if (primaryImg) {
+      setPrimaryImageId(primaryImg.id ?? null);
+      setPrimaryImageIndex(null);
+    } else if ((p.images ?? []).length > 0) {
+      setPrimaryImageId(p.images[0].id ?? null);
+      setPrimaryImageIndex(null);
+    }
   }, [existing.data]);
 
   const categories = useQuery({
@@ -137,6 +158,12 @@ export function ProductForm({ productId }: { productId?: string }) {
       });
       newImages.forEach((f) => fd.append("images[]", f));
       removedImageIds.forEach((id) => fd.append("removed_image_ids[]", String(id)));
+      if (primaryImageId !== null) {
+        fd.append("primary_image_id", String(primaryImageId));
+      }
+      if (primaryImageIndex !== null) {
+        fd.append("primary_image_index", String(primaryImageIndex));
+      }
       if (isEdit) {
         fd.append("_method", "PUT"); // PHP-friendly multipart update
         return adminApi.post<Product>(`/products/${productId}`, fd);
@@ -239,12 +266,37 @@ export function ProductForm({ productId }: { productId?: string }) {
             <ImageUploader
               multiple
               value={newImages}
-              onChange={setNewImages}
+              onChange={(files) => {
+                setNewImages(files);
+                if (primaryImageIndex !== null && primaryImageIndex >= files.length) {
+                  setPrimaryImageIndex(files.length > 0 ? 0 : null);
+                }
+                if (primaryImageId === null && primaryImageIndex === null && files.length > 0) {
+                  setPrimaryImageIndex(0);
+                }
+              }}
               existing={existingImages.map((i) => ({ id: i.id, url: i.url }))}
               onRemoveExisting={(id, idx) => {
                 if (id != null) setRemovedImageIds((prev) => [...prev, id]);
-                setExistingImages((prev) => prev.filter((_, i) => i !== idx));
+                setExistingImages((prev) => {
+                  const next = prev.filter((_, i) => i !== idx);
+                  if (primaryImageId !== null && String(id) === String(primaryImageId)) {
+                    if (next.length > 0) {
+                      setPrimaryImageId(next[0].id ?? null);
+                    } else if (newImages.length > 0) {
+                      setPrimaryImageId(null);
+                      setPrimaryImageIndex(0);
+                    } else {
+                      setPrimaryImageId(null);
+                      setPrimaryImageIndex(null);
+                    }
+                  }
+                  return next;
+                });
               }}
+              primaryId={primaryImageId}
+              primaryIndex={primaryImageIndex}
+              onSetPrimary={handleSetPrimary}
             />
           </Card>
 
@@ -269,11 +321,11 @@ export function ProductForm({ productId }: { productId?: string }) {
                   onChange={(e) => update({ compare_price: e.target.value })}
                 />
               </Field>
-              <Field label="cost_price quantity" required error={errors.cost_price}>
+              <Field label="Cost price (₹)" required error={errors.cost_price}>
                 <Input
                   type="number"
                   min="0"
-                  step="1"
+                  step="0.01"
                   value={form.cost_price}
                   onChange={(e) => update({ cost_price: e.target.value })}
                 />

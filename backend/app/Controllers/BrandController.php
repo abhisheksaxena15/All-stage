@@ -21,12 +21,30 @@ class BrandController extends BaseController
      */
     public function index(): void
     {
-        $brands = array_map(
-    fn($brand) => $brand->toArray(),
-    $this->service->getAll()
-);
+        $page = Request::query('page');
 
-$this->success($brands);
+        $brands = array_map(
+            fn($brand) => $brand->toArray(),
+            $this->service->getAll()
+        );
+
+        if ($page !== null && $page !== '') {
+            $perPage = (int)Request::query('per_page', 25);
+            $pageNum = (int)$page;
+
+            $total = count($brands);
+            $offset = ($pageNum - 1) * $perPage;
+            $sliced = array_slice($brands, $offset, $perPage);
+
+            $this->success([
+                'data' => $sliced,
+                'total' => $total,
+                'page' => $pageNum,
+                'per_page' => $perPage
+            ]);
+        } else {
+            $this->success($brands);
+        }
     }
 
     /**

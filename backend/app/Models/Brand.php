@@ -14,6 +14,7 @@ class Brand extends BaseModel
     private string $status;
     private ?string $createdAt;
     private ?string $updatedAt;
+    private ?int $productsCount = null;
 
     public function __construct(array $data = [])
     {
@@ -27,6 +28,30 @@ class Brand extends BaseModel
         $this->status = $data['status'] ?? 'ACTIVE';
         $this->createdAt = $data['created_at'] ?? null;
         $this->updatedAt = $data['updated_at'] ?? null;
+        $this->productsCount = isset($data['products_count']) ? (int)$data['products_count'] : null;
+    }
+
+    public function toArray(): array
+    {
+        $logoUrl = $this->logo;
+        if (!empty($logoUrl) && !str_starts_with($logoUrl, 'http')) {
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $logoUrl = rtrim($appUrl, '/') . '/' . ltrim($logoUrl, '/');
+        }
+
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'logo' => $this->logo,
+            'logo_url' => $logoUrl,
+            'website' => $this->website,
+            'sort_order' => $this->sortOrder,
+            'status' => strtolower($this->status),
+            'products_count' => $this->productsCount ?? 0,
+            'created_at' => $this->createdAt
+        ];
     }
 
     public function getId(): ?int { return $this->id; }

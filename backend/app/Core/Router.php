@@ -40,12 +40,13 @@ class Router
     $params = [];
 
     if (isset($this->routes[$method][$uri])) {
-
+        Request::setParams([]);
         $handler = $this->routes[$method][$uri];
-
     } else {
-
         foreach ($this->routes[$method] ?? [] as $route => $routeHandler) {
+            // Find placeholder parameter names (e.g., 'id' from '{id}')
+            preg_match_all('/\{([a-zA-Z_]+)\}/', $route, $paramNamesMatches);
+            $paramNames = $paramNamesMatches[1] ?? [];
 
             $pattern = preg_replace(
                 '/\{[a-zA-Z_]+\}/',
@@ -56,13 +57,19 @@ class Router
             $pattern = '#^' . $pattern . '$#';
 
             if (preg_match($pattern, $uri, $matches)) {
-
                 array_shift($matches);
-
                 $params = $matches;
+                
+                // Pair variable names with matches
+                $namedParams = [];
+                foreach ($paramNames as $index => $name) {
+                    if (isset($params[$index])) {
+                        $namedParams[$name] = $params[$index];
+                    }
+                }
+                Request::setParams($namedParams);
 
                 $handler = $routeHandler;
-
                 break;
             }
         }

@@ -47,4 +47,24 @@ class ProductImageRepository extends BaseRepository
 
         return (int)$this->db->lastInsertId();
     }
+
+    public function clearPrimaryStatus(int $productId): void
+    {
+        $stmt = $this->db->prepare("
+            UPDATE product_images
+            SET is_primary = 0
+            WHERE product_id = :product_id
+        ");
+        $stmt->execute([':product_id' => $productId]);
+    }
+
+    public function setPrimaryImage(int $imageId): void
+    {
+        $stmt = $this->db->prepare("
+            UPDATE product_images
+            SET is_primary = 1
+            WHERE id = :id
+        ");
+        $stmt->execute([':id' => $imageId]);
+    }
 }

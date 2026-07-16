@@ -1,13 +1,27 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Star, Heart, Truck, ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
-import { getProduct, getRelated } from "@/lib/products";
+import { getProduct, getRelated, mapDbProductToStorefront, useProductsList, PRODUCTS } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { useCart } from "@/context/CartContext";
 
 export const Route = createFileRoute("/products/$handle")({
-  loader: ({ params }) => {
-    const product = getProduct(params.handle);
+  loader: async ({ params }) => {
+    let product = PRODUCTS.find((p) => p.handle === params.handle);
+    if (!product) {
+      try {
+        const res = await fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products");
+        const json = await res.json();
+        if (json.success && json.data && json.data.data) {
+          const matched = json.data.data.find((p: any) => p.slug === params.handle);
+          if (matched) {
+            product = mapDbProductToStorefront(matched);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load product details from backend:", err);
+      }
+    }
     if (!product) throw notFound();
     return { product };
   },
@@ -29,7 +43,8 @@ export const Route = createFileRoute("/products/$handle")({
 
 function ProductPage() {
   const { product } = Route.useLoaderData();
-  const related = getRelated(product.handle);
+  const { products } = useProductsList();
+  const related = products.filter((p) => p.handle !== product.handle).slice(0, 4);
   const { addItem } = useCart();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);

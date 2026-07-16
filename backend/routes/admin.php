@@ -1,4 +1,6 @@
-<!-- Brands
+<?php
+/*
+Brands
     GET
     POST
     DELETE
@@ -15,8 +17,8 @@ Products
     DELETE {id}
 
 Product Images
-    POST -->
-<?php
+    POST
+*/
 
 use App\Controllers\BrandController;
 
@@ -45,6 +47,18 @@ $router->get(
 $router->post(
     '/api/admin/categories',
     [CategoryController::class, 'store']
+);
+
+use App\Controllers\SubcategoryController;
+
+$router->get(
+    '/api/admin/subcategories',
+    [SubcategoryController::class, 'index']
+);
+
+$router->post(
+    '/api/admin/subcategories',
+    [SubcategoryController::class, 'store']
 );
 
 use App\Controllers\ProductController;
@@ -84,4 +98,31 @@ use App\Controllers\ProductImageController;
 $router->post(
     '/api/admin/products/images',
     [ProductImageController::class,'upload']
+);
+
+use App\Controllers\DashboardController;
+
+$router->get(
+    '/api/admin/dashboard/stats',
+    [DashboardController::class, 'stats']
+);
+
+$router->get(
+    '/api/admin/dashboard/revenue',
+    [DashboardController::class, 'revenue']
+);
+
+$router->get(
+    '/api/admin/dashboard/categories',
+    [DashboardController::class, 'categories']
+);
+
+$router->get(
+    '/api/admin/orders',
+    [DashboardController::class, 'recentOrders']
+);
+
+$router->get(
+    '/api/admin/products/low-cost_price',
+    [DashboardController::class, 'lowStock']
 );

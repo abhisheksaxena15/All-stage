@@ -71,4 +71,17 @@ class SubcategoryRepository extends BaseRepository
 
         return $row ? new Subcategory($row) : null;
     }
+
+    public function findByCategoryId(int $categoryId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM subcategories WHERE category_id=:category_id"
+        );
+        $stmt->execute([':category_id' => $categoryId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function ($row) {
+            return new Subcategory($row);
+        }, $rows);
+    }
 }
