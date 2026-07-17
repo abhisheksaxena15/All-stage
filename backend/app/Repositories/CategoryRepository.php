@@ -86,4 +86,18 @@ class CategoryRepository extends BaseRepository
 
         return $row ? new Category($row) : null;
     }
+
+    public function hasProducts(int $categoryId): bool
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM products WHERE category_id = :category_id");
+        $stmt->execute([':category_id' => $categoryId]);
+        return ((int)$stmt->fetchColumn()) > 0;
+    }
+
+    public function hasSubcategories(int $categoryId): bool
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM subcategories WHERE category_id = :category_id");
+        $stmt->execute([':category_id' => $categoryId]);
+        return ((int)$stmt->fetchColumn()) > 0;
+    }
 }

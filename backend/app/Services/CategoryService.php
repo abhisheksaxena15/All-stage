@@ -71,6 +71,14 @@ class CategoryService
      */
     public function delete(int $id): bool
     {
+        if ($this->repository->hasProducts($id)) {
+            throw new Exception("Cannot delete category: It has associated products. Please reassign or delete the products first.");
+        }
+
+        if ($this->repository->hasSubcategories($id)) {
+            throw new Exception("Cannot delete category: It has associated subcategories. Please delete the subcategories first.");
+        }
+
         return $this->repository->delete($id);
     }
 }
