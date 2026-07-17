@@ -20,7 +20,7 @@ export default function ProductInventory({
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Stock Quantity
+            cost_price Quantity
           </label>
 
           <input
@@ -38,16 +38,16 @@ export default function ProductInventory({
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Low Stock Alert
+            Low cost_price Alert
           </label>
 
           <input
             type="number"
-            value={product.lowStockAlert}
+            value={product.lowcost_priceAlert}
             onChange={(e) =>
               setProduct((prev) => ({
                 ...prev,
-                lowStockAlert: Number(e.target.value),
+                lowcost_priceAlert: Number(e.target.value),
               }))
             }
             className="w-full rounded-lg border p-3"

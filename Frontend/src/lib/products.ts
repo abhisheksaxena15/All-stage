@@ -13,7 +13,7 @@ export type Product = {
   title: string;
   collection: string;
   category: ProductCategory;
-  price: number;
+  selling_price: number;
   mrp: number;
   image: string;
   altText: string;
@@ -29,6 +29,8 @@ export type Product = {
   rating: number;
   reviewCount: number;
   badge?: string;
+  images?: string[];
+  description?: string;
 };
 
 export const PRODUCTS: Product[] = [
@@ -37,7 +39,7 @@ export const PRODUCTS: Product[] = [
     title: "Giraffe Oversized Tee",
     collection: "Wild Type",
     category: "Tees",
-    price: 899,
+    selling_price: 899,
     mrp: 1799,
     image: giraffe,
     altText: "Bone-coloured oversized tee with a large hand-drawn giraffe graphic on the chest",
@@ -55,7 +57,7 @@ export const PRODUCTS: Product[] = [
     title: "Bad Ideas Graphic Tee",
     collection: "Ink Series",
     category: "Tees",
-    price: 999,
+    selling_price: 999,
     mrp: 1999,
     image: badIdeas,
     altText: "Black heavyweight tee with white 'Bad Ideas' typography print",
@@ -73,7 +75,7 @@ export const PRODUCTS: Product[] = [
     title: "Olive Heavyweight Tee",
     collection: "Base Layer",
     category: "Tees",
-    price: 849,
+    selling_price: 849,
     mrp: 1699,
     image: olive,
     altText: "Olive green heavyweight cotton tee with ribbed collar",
@@ -90,7 +92,7 @@ export const PRODUCTS: Product[] = [
     title: "Camp Collar Half-Sleeve Shirt",
     collection: "Summer Cut",
     category: "Shirts",
-    price: 1499,
+    selling_price: 1499,
     mrp: 2999,
     image: shirt,
     altText: "Cream camp-collar half-sleeve shirt with wooden buttons",
@@ -107,7 +109,7 @@ export const PRODUCTS: Product[] = [
     title: "Walnut Cord Overshirt",
     collection: "Winter Drop",
     category: "Shirts",
-    price: 2499,
+    selling_price: 2499,
     mrp: 4999,
     image: walnut,
     altText: "Walnut brown corduroy overshirt with chest pockets",
@@ -118,14 +120,14 @@ export const PRODUCTS: Product[] = [
     fit: "Boxy · Layerable",
     rating: 4.9,
     reviewCount: 54,
-    badge: "LOW STOCK",
+    badge: "LOW cost_price",
   },
   {
     handle: "blaze-racer-tank",
     title: "Blaze Racer Tank",
     collection: "Molten Drop",
     category: "Tanks",
-    price: 699,
+    selling_price: 699,
     mrp: 1399,
     image: blaze,
     altText: "Molten red racer-back tank with raw-cut armholes",
@@ -142,7 +144,7 @@ export const PRODUCTS: Product[] = [
     title: "Essential Rib Tank",
     collection: "Base Layer",
     category: "Tanks",
-    price: 599,
+    selling_price: 599,
     mrp: 1199,
     image: tank,
     altText: "Ink black ribbed cotton tank top",
@@ -155,6 +157,103 @@ export const PRODUCTS: Product[] = [
     reviewCount: 88,
   },
 ];
+
+import { useState, useEffect } from "react";
+
+export function mapDbProductToStorefront(dbProd: any): Product {
+  let imgUrl = dbProd.primary_image_url;
+  if (!imgUrl && dbProd.images && dbProd.images.length > 0) {
+    imgUrl = dbProd.images[0].url || dbProd.images[0].image_url;
+  }
+  if (!imgUrl) {
+    imgUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=1000";
+  }
+
+  let images: string[] = [];
+  if (dbProd.images && Array.isArray(dbProd.images)) {
+    images = dbProd.images.map((img: any) => img.url || img.image_url);
+  } else {
+    images = [imgUrl];
+  }
+
+  return {
+    handle: dbProd.slug || `prod-${dbProd.id}`,
+    title: dbProd.name || "Untitled Product",
+    collection: dbProd.brand_name || "Streetwear",
+    category: (dbProd.category_name || "Tees") as ProductCategory,
+    selling_price: Number(dbProd.selling_price) || 0,
+    mrp: Number(dbProd.compare_price) || Number(dbProd.selling_price) || 0,
+    image: imgUrl,
+    altText: dbProd.short_description || dbProd.name || "",
+    sizes: ["S", "M", "L", "XL"],
+    color: "Solid",
+    fabric: "100% Cotton",
+    gsm: 240,
+    fit: "Oversized Fit",
+    rating: 4.8,
+    reviewCount: 120,
+    badge: dbProd.featured ? "FEATURED" : undefined,
+    images: images,
+    description: dbProd.description || "",
+  };
+}
+
+export function useProductsList() {
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data && json.data.data) {
+          const dbProducts = json.data.data.map(mapDbProductToStorefront);
+          const dbHandles = new Set(dbProducts.map((p: any) => p.handle));
+          const filteredHardcoded = PRODUCTS.filter((p) => !dbHandles.has(p.handle));
+          setProducts([...dbProducts, ...filteredHardcoded]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load products from backend:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  return { products, loading };
+}
+
+export function useCategoriesList() {
+  const [categories, setCategories] = useState<{ handle: string; label: string }[]>(CATEGORIES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/categories")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          const dbCats = json.data.map((c: any) => ({
+            handle: c.slug || `cat-${c.id}`,
+            label: c.name || "Untitled Category",
+          }));
+          const shopAll = { handle: "shop-all", label: "Shop All" };
+          const dbHandles = new Set(dbCats.map((c: any) => c.handle));
+          const filteredHardcoded = CATEGORIES.filter((c) => c.handle !== "shop-all" && !dbHandles.has(c.handle));
+          
+          setCategories([shopAll, ...dbCats, ...filteredHardcoded]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load categories from backend:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  return { categories, loading };
+}
 
 export function getProduct(handle: string) {
   return PRODUCTS.find((p) => p.handle === handle);

@@ -153,11 +153,11 @@ const handlers: Record<EventTopic, Record<string, Handler>> = {
     "inventory.reserved": (e) => {
       const d = e.data as { handle: string; delta: number };
       console.log(`[inventory] ${d.handle} ${d.delta > 0 ? "+" : ""}${d.delta}`);
-      // TODO: UPDATE public.products SET stock = stock + $delta WHERE handle = $handle
+      // TODO: UPDATE public.products SET cost_price = cost_price + $delta WHERE handle = $handle
     },
-    "inventory.restocked": (e) => {
+    "inventory.recost_priceed": (e) => {
       const d = e.data as { handle: string; delta: number };
-      console.log(`[inventory] restock ${d.handle} +${d.delta}`);
+      console.log(`[inventory] recost_price ${d.handle} +${d.delta}`);
     },
   },
 

@@ -14,34 +14,54 @@ class Request
      */
     public static function method(): string
     {
-        return strtoupper($_SERVER['REQUEST_METHOD']);
+        $method = strtoupper($_SERVER['REQUEST_METHOD']);
+        if ($method === 'POST' && isset($_POST['_method'])) {
+            return strtoupper($_POST['_method']);
+        }
+        return $method;
     }
 
     /**
      * URI
      */
     public static function uri(): string
-    {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+{
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        $uri = rtrim($uri, '/');
+    // Base path of your application
+    $basePath = '/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+    // $basePath = '/allstag/backend/public';
 
-        return $uri ?: '/';
+    // Remove base path
+    if (str_starts_with($uri, $basePath)) {
+        $uri = substr($uri, strlen($basePath));
     }
+
+    $uri = rtrim($uri, '/');
+
+    return $uri ?: '/';
+}
 
     /**
      * JSON Body
      */
     public static function body(): array
-    {
-        $input = file_get_contents("php://input");
-
-        if (!$input) {
-            return [];
-        }
-
-        return json_decode($input, true) ?? [];
+{
+    if (
+        isset($_SERVER['CONTENT_TYPE']) &&
+        str_contains($_SERVER['CONTENT_TYPE'], 'multipart/form-data')
+    ) {
+        return $_POST;
     }
+
+    $input = file_get_contents("php://input");
+
+    if (!$input) {
+        return [];
+    }
+
+    return json_decode($input, true) ?? [];
+}
 
     /**
      * Query Parameters

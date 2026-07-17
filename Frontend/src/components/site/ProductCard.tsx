@@ -9,7 +9,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [added, setAdded] = useState(false);
   const [wished, setWished] = useState(false);
   const [pickSize, setPickSize] = useState(false);
-  const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const off = Math.round(((product.mrp - product.selling_price) / product.mrp) * 100);
 
   const handleAdd = (size: string) => {
     addItem(product, size, 1);
@@ -90,8 +90,8 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm font-bold">₹{product.price}</div>
-          <div className="strike-price text-xs">₹{product.mrp}</div>
+          <div className="text-sm font-bold">₹{product.selling_price}</div>
+          <div className="strike-selling_price text-xs">₹{product.mrp}</div>
         </div>
       </div>
     </div>

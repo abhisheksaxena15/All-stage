@@ -8,21 +8,36 @@ abstract class BaseModel
      * Convert model to array
      */
     public function toArray(): array
-    {
-        return get_object_vars($this);
+{
+    $reflection = new \ReflectionObject($this);
+
+    $data = [];
+
+    foreach ($reflection->getProperties() as $property) {
+
+        $property->setAccessible(true);
+
+        $data[$property->getName()] = $property->getValue($this);
+
     }
+
+    return $data;
+}
 
     /**
      * Hydrate model from database row
      */
     public function fill(array $data): static
     {
-        foreach ($data as $key => $value) {
+        $reflection = new \ReflectionObject($this);
 
+        foreach ($data as $key => $value) {
             $property = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
 
-            if (property_exists($this, $property)) {
-                $this->$property = $value;
+            if ($reflection->hasProperty($property)) {
+                $prop = $reflection->getProperty($property);
+                $prop->setAccessible(true);
+                $prop->setValue($this, $value);
             }
         }
 

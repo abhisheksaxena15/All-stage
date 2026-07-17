@@ -17,7 +17,8 @@ class ProductImageService
 
     public function upload(
         int $productId,
-        array $file
+        array $file,
+        bool $isPrimary = false
     ): ProductImage {
 
         $path = UploadHelper::uploadProductImage($file);
@@ -28,7 +29,7 @@ class ProductImageService
 
         $image->setImagePath($path);
 
-        $image->setPrimary(false);
+        $image->setPrimary($isPrimary);
 
         $image->setSortOrder(0);
 

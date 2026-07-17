@@ -1,47 +1,36 @@
-const API = import.meta.env.VITE_ADMIN_API_URL;
+import { adminApi } from "@/lib/admin-api";
 
-export async function createProduct(product: any) {
+export interface ProductPayload {
+  brand_id: number;
+  category_id: number;
+  subcategory_id?: number | null;
 
-    const response = await fetch(
+  name: string;
+  slug: string;
+  sku: string;
 
-        `${API}/products`,
+  short_description?: string;
+  description?: string;
 
-        {
+  selling_price: number;
+  compare_price: number;
+  cost_price: number;
 
-            method: "POST",
+  status: string;
 
-            headers: {
-
-                "Content-Type":"application/json"
-
-            },
-
-            body:JSON.stringify(product)
-
-        }
-
-    );
-
-    return response.json();
-
+  featured: boolean;
+  new_arrival: boolean;
+  best_seller: boolean;
 }
 
-export async function getProducts(){
-
-    const response = await fetch(
-
-        `${API}/products`
-
-    );
-
-    return response.json();
-
+export async function getProducts() {
+  return await adminApi.get("/products");
 }
 
-// updateProduct()
+export async function createProduct(data: ProductPayload) {
+  return await adminApi.post("/products", data);
+}
 
-// deleteProduct()
-
-// uploadImages()
-
-// uploadVariants()
+export async function deleteProduct(id: number) {
+  return await adminApi.delete(`/products/${id}`);
+}

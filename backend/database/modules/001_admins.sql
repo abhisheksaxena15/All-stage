@@ -1,0 +1,30 @@
+CREATE TABLE admins (
+
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    name VARCHAR(150) NOT NULL,
+
+    email VARCHAR(255) NOT NULL UNIQUE,
+
+    password VARCHAR(255) NOT NULL,
+
+    role ENUM(
+        'SUPER_ADMIN',
+        'ADMIN',
+        'MANAGER'
+    ) DEFAULT 'ADMIN',
+
+    avatar VARCHAR(255) NULL,
+
+    status ENUM(
+        'ACTIVE',
+        'INACTIVE'
+    ) DEFAULT 'ACTIVE',
+
+    last_login TIMESTAMP NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);

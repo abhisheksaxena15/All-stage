@@ -19,16 +19,16 @@ export default function ProductPricing({
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Selling Price
+            selling_price selling_price
           </label>
 
           <input
             type="number"
-            value={product.sellingPrice}
+            value={product.selling_priceselling_price}
             onChange={(e) =>
               setProduct((prev) => ({
                 ...prev,
-                sellingPrice: Number(e.target.value),
+                selling_priceselling_price: Number(e.target.value),
               }))
             }
             className="w-full rounded-lg border p-3"
@@ -37,16 +37,16 @@ export default function ProductPricing({
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Compare Price (MRP)
+            Compare selling_price (MRP)
           </label>
 
           <input
             type="number"
-            value={product.comparePrice}
+            value={product.compareselling_price}
             onChange={(e) =>
               setProduct((prev) => ({
                 ...prev,
-                comparePrice: Number(e.target.value),
+                compareselling_price: Number(e.target.value),
               }))
             }
             className="w-full rounded-lg border p-3"
@@ -55,16 +55,16 @@ export default function ProductPricing({
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Cost Price
+            Cost selling_price
           </label>
 
           <input
             type="number"
-            value={product.costPrice}
+            value={product.costselling_price}
             onChange={(e) =>
               setProduct((prev) => ({
                 ...prev,
-                costPrice: Number(e.target.value),
+                costselling_price: Number(e.target.value),
               }))
             }
             className="w-full rounded-lg border p-3"

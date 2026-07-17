@@ -18,6 +18,12 @@ CREATE TABLE products (
 
     description LONGTEXT NULL,
 
+    selling_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+
+    compare_price DECIMAL(10,2) DEFAULT 0.00,
+
+    cost_price DECIMAL(10,2) DEFAULT 0.00,
+
     status ENUM(
         'DRAFT',
         'ACTIVE',

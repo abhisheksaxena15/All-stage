@@ -6,7 +6,7 @@ class UploadHelper
 {
     public static function uploadProductImage(array $file): string
     {
-        $directory = __DIR__ . '/../../uploads/products/';
+        $directory = __DIR__ . '/../../public/uploads/products/';
 
         if (!is_dir($directory)) {
             mkdir($directory, 0777, true);

@@ -19,15 +19,14 @@ interface FormState {
   sku: string;
   short_description: string;
   description: string;
-  price: string;
-  discount_price: string;
-  stock: string;
+ selling_price: string;
+compare_price: string;
+cost_price: string;
   category_id: string;
   subcategory_id: string;
   brand_id: string;
   featured: boolean;
-  status: "active" | "inactive";
-}
+status: "ACTIVE" | "DRAFT" | "ARCHIVED";}
 
 const empty: FormState = {
   name: "",
@@ -35,14 +34,14 @@ const empty: FormState = {
   sku: "",
   short_description: "",
   description: "",
-  price: "",
-  discount_price: "",
-  stock: "0",
+  selling_price: "",
+  compare_price: "",
+  cost_price: "",
   category_id: "",
   subcategory_id: "",
   brand_id: "",
   featured: false,
-  status: "active",
+  status: "ACTIVE",
 };
 
 function slugify(s: string) {
@@ -60,6 +59,18 @@ export function ProductForm({ productId }: { productId?: string }) {
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<(string | number)[]>([]);
   const [slugDirty, setSlugDirty] = useState(false);
+  const [primaryImageId, setPrimaryImageId] = useState<string | number | null>(null);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number | null>(null);
+
+  const handleSetPrimary = (type: "existing" | "new", val: string | number) => {
+    if (type === "existing") {
+      setPrimaryImageId(val);
+      setPrimaryImageIndex(null);
+    } else {
+      setPrimaryImageId(null);
+      setPrimaryImageIndex(Number(val));
+    }
+  };
 
   const existing = useQuery({
     queryKey: ["admin", "products", productId],
@@ -77,17 +88,26 @@ export function ProductForm({ productId }: { productId?: string }) {
       sku: p.sku ?? "",
       short_description: p.short_description ?? "",
       description: p.description ?? "",
-      price: p.price != null ? String(p.price) : "",
-      discount_price: p.discount_price != null ? String(p.discount_price) : "",
-      stock: String(p.stock ?? 0),
+      selling_price: p.selling_price != null ? String(p.selling_price) : "",
+      compare_price: p.compare_price != null ? String(p.compare_price) : "",
+      cost_price: String(p.cost_price ?? 0),
       category_id: p.category_id != null ? String(p.category_id) : "",
       subcategory_id: p.subcategory_id != null ? String(p.subcategory_id) : "",
       brand_id: p.brand_id != null ? String(p.brand_id) : "",
       featured: !!p.featured,
-      status: p.status ?? "active",
+      status: p.status ?? "ACTIVE",
     });
     setExistingImages(p.images ?? []);
     setSlugDirty(true);
+
+    const primaryImg = (p.images ?? []).find((i) => i.is_primary);
+    if (primaryImg) {
+      setPrimaryImageId(primaryImg.id ?? null);
+      setPrimaryImageIndex(null);
+    } else if ((p.images ?? []).length > 0) {
+      setPrimaryImageId(p.images[0].id ?? null);
+      setPrimaryImageIndex(null);
+    }
   }, [existing.data]);
 
   const categories = useQuery({
@@ -121,10 +141,11 @@ export function ProductForm({ productId }: { productId?: string }) {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
     if (!form.slug.trim()) e.slug = "Required";
-    if (!form.price || Number(form.price) < 0) e.price = "Enter a valid price";
-    if (form.discount_price && Number(form.discount_price) >= Number(form.price))
-      e.discount_price = "Must be lower than price";
-    if (Number(form.stock) < 0) e.stock = "Cannot be negative";
+    if (!form.sku.trim()) e.sku = "Required";
+    if (!form.selling_price || Number(form.selling_price) < 0) e.selling_price = "Enter a valid selling_price";
+    if (form.compare_price && Number(form.compare_price) >= Number(form.selling_price))
+      e.compare_price = "Must be lower than selling_price";
+    if (Number(form.cost_price) < 0) e.cost_price = "Cannot be negative";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -138,6 +159,12 @@ export function ProductForm({ productId }: { productId?: string }) {
       });
       newImages.forEach((f) => fd.append("images[]", f));
       removedImageIds.forEach((id) => fd.append("removed_image_ids[]", String(id)));
+      if (primaryImageId !== null) {
+        fd.append("primary_image_id", String(primaryImageId));
+      }
+      if (primaryImageIndex !== null) {
+        fd.append("primary_image_index", String(primaryImageIndex));
+      }
       if (isEdit) {
         fd.append("_method", "PUT"); // PHP-friendly multipart update
         return adminApi.post<Product>(`/products/${productId}`, fd);
@@ -208,7 +235,7 @@ export function ProductForm({ productId }: { productId?: string }) {
                     placeholder="heavyweight-oversized-tee"
                   />
                 </Field>
-                <Field label="SKU" error={errors.sku}>
+                <Field label="SKU" required error={errors.sku}>
                   <Input
                     value={form.sku}
                     onChange={(e) => update({ sku: e.target.value })}
@@ -240,43 +267,68 @@ export function ProductForm({ productId }: { productId?: string }) {
             <ImageUploader
               multiple
               value={newImages}
-              onChange={setNewImages}
+              onChange={(files) => {
+                setNewImages(files);
+                if (primaryImageIndex !== null && primaryImageIndex >= files.length) {
+                  setPrimaryImageIndex(files.length > 0 ? 0 : null);
+                }
+                if (primaryImageId === null && primaryImageIndex === null && files.length > 0) {
+                  setPrimaryImageIndex(0);
+                }
+              }}
               existing={existingImages.map((i) => ({ id: i.id, url: i.url }))}
               onRemoveExisting={(id, idx) => {
                 if (id != null) setRemovedImageIds((prev) => [...prev, id]);
-                setExistingImages((prev) => prev.filter((_, i) => i !== idx));
+                setExistingImages((prev) => {
+                  const next = prev.filter((_, i) => i !== idx);
+                  if (primaryImageId !== null && String(id) === String(primaryImageId)) {
+                    if (next.length > 0) {
+                      setPrimaryImageId(next[0].id ?? null);
+                    } else if (newImages.length > 0) {
+                      setPrimaryImageId(null);
+                      setPrimaryImageIndex(0);
+                    } else {
+                      setPrimaryImageId(null);
+                      setPrimaryImageIndex(null);
+                    }
+                  }
+                  return next;
+                });
               }}
+              primaryId={primaryImageId}
+              primaryIndex={primaryImageIndex}
+              onSetPrimary={handleSetPrimary}
             />
           </Card>
 
           <Card className="p-5">
             <h3 className="mb-4 text-sm font-semibold">Pricing & inventory</h3>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Price (₹)" required error={errors.price}>
+              <Field label="selling_price (₹)" required error={errors.selling_price}>
                 <Input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.price}
-                  onChange={(e) => update({ price: e.target.value })}
+                  value={form.selling_price}
+                  onChange={(e) => update({ selling_price: e.target.value })}
                 />
               </Field>
-              <Field label="Discount price (₹)" error={errors.discount_price}>
+              <Field label="Discount selling_price (₹)" error={errors.compare_price}>
                 <Input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.discount_price}
-                  onChange={(e) => update({ discount_price: e.target.value })}
+                  value={form.compare_price}
+                  onChange={(e) => update({ compare_price: e.target.value })}
                 />
               </Field>
-              <Field label="Stock quantity" required error={errors.stock}>
+              <Field label="Cost price (₹)" required error={errors.cost_price}>
                 <Input
                   type="number"
                   min="0"
-                  step="1"
-                  value={form.stock}
-                  onChange={(e) => update({ stock: e.target.value })}
+                  step="0.01"
+                  value={form.cost_price}
+                  onChange={(e) => update({ cost_price: e.target.value })}
                 />
               </Field>
             </div>
@@ -330,10 +382,11 @@ export function ProductForm({ productId }: { productId?: string }) {
               <Field label="Status">
                 <Select
                   value={form.status}
-                  onChange={(e) => update({ status: e.target.value as "active" | "inactive" })}
+                  onChange={(e) => update({ status: e.target.value as "ACTIVE" | "DRAFT" | "ARCHIVED" })}
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="ARCHIVED">Archived</option>
                 </Select>
               </Field>
               <label className="flex items-center gap-2 text-sm">

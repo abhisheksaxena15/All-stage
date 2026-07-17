@@ -8,7 +8,24 @@ use PDO;
 class CategoryRepository extends BaseRepository
 {
     protected string $table = 'categories';
-    protected string $model = Brand::class;
+    protected string $model = Category::class;
+
+    public function findAll(): array
+    {
+        $sql = "
+            SELECT c.*, 
+                   (SELECT COUNT(*) FROM subcategories s WHERE s.category_id = c.id) as subcategories_count,
+                   (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) as products_count
+            FROM categories c
+            ORDER BY c.sort_order ASC, c.id DESC
+        ";
+        $stmt = $this->db->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function ($row) {
+            return new Category($row);
+        }, $rows);
+    }
     public function create(Category $category): int
     {
         $sql = "INSERT INTO categories
@@ -68,5 +85,19 @@ class CategoryRepository extends BaseRepository
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? new Category($row) : null;
+    }
+
+    public function hasProducts(int $categoryId): bool
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM products WHERE category_id = :category_id");
+        $stmt->execute([':category_id' => $categoryId]);
+        return ((int)$stmt->fetchColumn()) > 0;
+    }
+
+    public function hasSubcategories(int $categoryId): bool
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM subcategories WHERE category_id = :category_id");
+        $stmt->execute([':category_id' => $categoryId]);
+        return ((int)$stmt->fetchColumn()) > 0;
     }
 }

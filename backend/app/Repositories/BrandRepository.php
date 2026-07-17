@@ -70,4 +70,20 @@ class BrandRepository extends BaseRepository
 
         return $row ? new Brand($row) : null;
     }
+
+    public function findAll(): array
+    {
+        $sql = "
+            SELECT b.*, 
+                   (SELECT COUNT(*) FROM products p WHERE p.brand_id = b.id) as products_count
+            FROM brands b
+            ORDER BY b.sort_order ASC, b.id DESC
+        ";
+        $stmt = $this->db->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function ($row) {
+            return new Brand($row);
+        }, $rows);
+    }
 }

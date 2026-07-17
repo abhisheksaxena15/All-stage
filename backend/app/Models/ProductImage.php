@@ -21,6 +21,11 @@ class ProductImage extends BaseModel
         $this->fill($data);
     }
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
     public function getProductId(): int
     {
         return $this->productId;
@@ -69,5 +74,23 @@ class ProductImage extends BaseModel
     public function setSortOrder(int $order): void
     {
         $this->sortOrder = $order;
+    }
+
+    public function toArray(): array
+    {
+        $url = $this->imagePath;
+        if (!empty($url) && !str_starts_with($url, 'http')) {
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $url = rtrim($appUrl, '/') . '/' . ltrim($url, '/');
+        }
+
+        return [
+            'id' => $this->id,
+            'product_id' => $this->productId,
+            'url' => $url,
+            'alt_text' => $this->altText,
+            'is_primary' => $this->isPrimary,
+            'sort_order' => $this->sortOrder
+        ];
     }
 }

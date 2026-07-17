@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
-import { CATEGORIES } from "@/lib/products";
+import { CATEGORIES, useCategoriesList } from "@/lib/products";
 import { useCart } from "@/context/CartContext";
 
 export function Header() {
   const { count } = useCart();
+  const { categories } = useCategoriesList();
+  
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-bone/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 lg:px-8">
@@ -16,18 +18,14 @@ export function Header() {
           <Link to="/collections/$handle" params={{ handle: "shop-all" }} className="hover:text-molten">
             New
           </Link>
-          <Link to="/collections/$handle" params={{ handle: "tees" }} className="text-molten hover:text-ink">
+          <Link to="/collections/$handle" params={{ handle: "shop-all" }} className="text-molten hover:text-ink">
             50% Sale
           </Link>
-          <Link to="/collections/$handle" params={{ handle: "tees" }} className="hover:text-molten">
-            Tees
-          </Link>
-          <Link to="/collections/$handle" params={{ handle: "shirts" }} className="hover:text-molten">
-            Shirts
-          </Link>
-          <Link to="/collections/$handle" params={{ handle: "tanks" }} className="hover:text-molten">
-            Tanks
-          </Link>
+          {categories.filter(c => c.handle !== "shop-all").map((c) => (
+            <Link key={c.handle} to="/collections/$handle" params={{ handle: c.handle }} className="hover:text-molten">
+              {c.label}
+            </Link>
+          ))}
         </nav>
 
         <Link to="/" className="text-display text-2xl tracking-[0.15em] lg:text-3xl">
@@ -51,7 +49,7 @@ export function Header() {
       {/* Secondary category strip */}
       <div className="hidden border-t border-ink/10 lg:block">
         <div className="mx-auto flex max-w-[1400px] items-center justify-center gap-8 px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-muted-foreground lg:px-8">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Link key={c.handle} to="/collections/$handle" params={{ handle: c.handle }} className="hover:text-ink">
               {c.label}
             </Link>

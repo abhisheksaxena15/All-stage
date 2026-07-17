@@ -74,11 +74,11 @@ interface RecentOrder {
   status: string;
   created_at: string;
 }
-interface LowStockItem {
+interface Lowcost_priceItem {
   id: string | number;
   name: string;
   sku?: string;
-  stock: number;
+  cost_price: number;
 }
 
 // ---------- Formatters ----------
@@ -119,9 +119,9 @@ function DashboardPage() {
     retry: false,
   });
 
-  const lowStock = useQuery({
-    queryKey: ["admin", "dashboard", "low-stock"],
-    queryFn: () => adminApi.get<LowStockItem[]>("/products/low-stock?limit=6"),
+  const lowcost_price = useQuery({
+    queryKey: ["admin", "dashboard", "low-cost_price"],
+    queryFn: () => adminApi.get<Lowcost_priceItem[]>("/products/low-cost_price?limit=6"),
     retry: false,
   });
 
@@ -329,7 +329,7 @@ function DashboardPage() {
         </div>
       </Panel>
 
-      {/* Recent orders + low stock */}
+      {/* Recent orders + low cost_price */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
           title="Recent orders"
@@ -364,13 +364,13 @@ function DashboardPage() {
         </Panel>
 
         <Panel
-          title="Low stock"
-          subtitle="Restock these soon"
-          loading={lowStock.isLoading}
-          empty={!lowStock.isLoading && !(lowStock.data && lowStock.data.length)}
+          title="Low cost_price"
+          subtitle="Recost_price these soon"
+          loading={lowcost_price.isLoading}
+          empty={!lowcost_price.isLoading && !(lowcost_price.data && lowcost_price.data.length)}
         >
           <ul className="divide-y divide-border">
-            {(lowStock.data ?? []).map((p) => (
+            {(lowcost_price.data ?? []).map((p) => (
               <li key={p.id} className="flex items-center justify-between py-3">
                 <div>
                   <div className="text-sm font-medium">{p.name}</div>
@@ -381,15 +381,15 @@ function DashboardPage() {
                 <div
                   className={cn(
                     "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium",
-                    p.stock <= 0
+                    p.cost_price <= 0
                       ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                      : p.stock < 5
+                      : p.cost_price < 5
                         ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                         : "bg-muted text-foreground/80",
                   )}
                 >
                   <AlertTriangle className="h-3 w-3" />
-                  {p.stock} left
+                  {p.cost_price} left
                 </div>
               </li>
             ))}

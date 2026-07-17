@@ -1,13 +1,27 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, Heart, Truck, ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
-import { getProduct, getRelated } from "@/lib/products";
+import { getProduct, getRelated, mapDbProductToStorefront, useProductsList, PRODUCTS } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { useCart } from "@/context/CartContext";
 
 export const Route = createFileRoute("/products/$handle")({
-  loader: ({ params }) => {
-    const product = getProduct(params.handle);
+  loader: async ({ params }) => {
+    let product = PRODUCTS.find((p) => p.handle === params.handle);
+    if (!product) {
+      try {
+        const res = await fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products");
+        const json = await res.json();
+        if (json.success && json.data && json.data.data) {
+          const matched = json.data.data.find((p: any) => p.slug === params.handle);
+          if (matched) {
+            product = mapDbProductToStorefront(matched);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load product details from backend:", err);
+      }
+    }
     if (!product) throw notFound();
     return { product };
   },
@@ -17,7 +31,7 @@ export const Route = createFileRoute("/products/$handle")({
     return {
       meta: [
         { title: `${product.title} — Allstag` },
-        { name: "description", content: `${product.title}. ${product.fabric}, ${product.gsm}g, ${product.fit}. ₹${product.price}.` },
+        { name: "description", content: `${product.title}. ${product.fabric}, ${product.gsm}g, ${product.fit}. ₹${product.selling_price}.` },
         { property: "og:title", content: `${product.title} — Allstag` },
         { property: "og:description", content: `${product.fabric} · ${product.gsm}g · ${product.fit}` },
         { property: "og:image", content: product.image },
@@ -29,7 +43,8 @@ export const Route = createFileRoute("/products/$handle")({
 
 function ProductPage() {
   const { product } = Route.useLoaderData();
-  const related = getRelated(product.handle);
+  const { products } = useProductsList();
+  const related = products.filter((p) => p.handle !== product.handle).slice(0, 4);
   const { addItem } = useCart();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
@@ -40,7 +55,13 @@ function ProductPage() {
   const [openFaq, setOpenFaq] = useState(false);
   const [pincode, setPincode] = useState("");
   const [eta, setEta] = useState<string | null>(null);
-  const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const [activeImage, setActiveImage] = useState(product.image);
+
+  useEffect(() => {
+    setActiveImage(product.image);
+  }, [product.image]);
+
+  const off = Math.round(((product.mrp - product.selling_price) / product.mrp) * 100);
 
   const requireSize = () => {
     if (!size) {
@@ -71,16 +92,23 @@ function ProductPage() {
         {/* GALLERY */}
         <div className="space-y-3">
           <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-            <img src={product.image} alt={product.altText} className="h-full w-full object-cover" />
+            <img src={activeImage} alt={product.altText} className="h-full w-full object-cover" />
             <div className="absolute left-4 top-4 bg-molten px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-bone">
               -{off}% OFF
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[product.image, product.image, product.image].map((src, i) => (
-              <div key={i} className="aspect-square overflow-hidden bg-muted ring-1 ring-transparent hover:ring-ink">
-                <img src={src} alt={`${product.altText} — view ${i + 2}`} className="h-full w-full object-cover" />
-              </div>
+          <div className="grid grid-cols-4 gap-3">
+            {(product.images && product.images.length > 0 ? product.images : [product.image]).map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveImage(src)}
+                className={`aspect-square overflow-hidden bg-muted ring-2 transition ${
+                  activeImage === src ? "ring-molten" : "ring-transparent hover:ring-ink"
+                }`}
+              >
+                <img src={src} alt={`${product.altText} — view ${i + 1}`} className="h-full w-full object-cover" />
+              </button>
             ))}
           </div>
         </div>
@@ -103,16 +131,22 @@ function ProductPage() {
           </div>
 
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="text-3xl font-bold">₹{product.price}</span>
-            <span className="strike-price text-lg">₹{product.mrp}</span>
+            <span className="text-3xl font-bold">₹{product.selling_price}</span>
+            <span className="strike-selling_price text-lg">₹{product.mrp}</span>
             <span className="bg-molten/10 px-2 py-0.5 text-xs font-bold text-molten">-{off}%</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Inclusive of all taxes · Shipping calculated at checkout</p>
 
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            A <span className="font-medium text-foreground">{product.fit.toLowerCase()}</span> cut in{" "}
-            {product.fabric.toLowerCase()} at {product.gsm} GSM — heavyweight, structured, built to hold shape wash after wash.
-          </p>
+          {product.description ? (
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+              {product.description}
+            </p>
+          ) : (
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              A <span className="font-medium text-foreground">{product.fit.toLowerCase()}</span> cut in{" "}
+              {product.fabric.toLowerCase()} at {product.gsm} GSM — heavyweight, structured, built to hold shape wash after wash.
+            </p>
+          )}
 
           {/* Size */}
           <div className="mt-6">

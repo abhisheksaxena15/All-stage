@@ -9,7 +9,7 @@
  * Topics (see README §11):
  *   allstag.orders.v1        — order lifecycle (created, paid, fulfilled…)
  *   allstag.cart.v1          — cart mutations for personalization
- *   allstag.inventory.v1     — stock deltas from checkout / restock
+ *   allstag.inventory.v1     — cost_price deltas from checkout / recost_price
  *   allstag.users.v1         — signup, profile updates
  *   allstag.emails.v1        — outbound transactional email jobs
  *   allstag.audit.v1         — admin actions, RBAC changes

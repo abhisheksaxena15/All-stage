@@ -36,6 +36,14 @@ class Product extends BaseModel
 
     private bool $bestSeller = false;
 
+    private ?string $brandName = null;
+
+    private ?string $categoryName = null;
+
+    private array $images = [];
+
+    private ?string $primaryImageUrl = null;
+
     public function __construct(array $data = [])
 {
     if (!empty($data)) {
@@ -79,6 +87,18 @@ class Product extends BaseModel
         $this->newArrival = (bool)($data['new_arrival'] ?? false);
 
         $this->bestSeller = (bool)($data['best_seller'] ?? false);
+
+        if (isset($data['brand_name'])) {
+            $this->brandName = $data['brand_name'];
+        }
+
+        if (isset($data['category_name'])) {
+            $this->categoryName = $data['category_name'];
+        }
+
+        if (isset($data['primary_image_url'])) {
+            $this->primaryImageUrl = $data['primary_image_url'];
+        }
     }
 }
 
@@ -119,6 +139,18 @@ class Product extends BaseModel
 
     public function getCostPrice(): float { return $this->costPrice; }
     public function setCostPrice(float $value): void { $this->costPrice = $value; }
+
+    public function getBrandName(): ?string { return $this->brandName; }
+    public function setBrandName(?string $value): void { $this->brandName = $value; }
+
+    public function getCategoryName(): ?string { return $this->categoryName; }
+    public function setCategoryName(?string $value): void { $this->categoryName = $value; }
+
+    public function getImages(): array { return $this->images; }
+    public function setImages(array $value): void { $this->images = $value; }
+
+    public function getPrimaryImageUrl(): ?string { return $this->primaryImageUrl; }
+    public function setPrimaryImageUrl(?string $value): void { $this->primaryImageUrl = $value; }
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $value): void { $this->status = $value; }
@@ -166,7 +198,15 @@ class Product extends BaseModel
 
         'new_arrival' => $this->newArrival,
 
-        'best_seller' => $this->bestSeller
+        'best_seller' => $this->bestSeller,
+
+        'brand_name' => $this->brandName,
+
+        'category_name' => $this->categoryName,
+
+        'images' => array_map(fn($img) => $img->toArray(), $this->images),
+
+        'primary_image_url' => $this->primaryImageUrl
 
     ];
 }

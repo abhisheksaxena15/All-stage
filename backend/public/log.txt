@@ -1,0 +1,26 @@
+REQUEST RECEIVED:
+Array
+(
+    [name] => Electro
+    [slug] => electro
+    [sku] => ALS-TEE-01
+    [short_description] => xsxs
+    [description] => xssx
+    [selling_price] => 100
+    [compare_price] => 90
+    [cost_price] => 99
+    [featured] => 1
+    [status] => active
+)
+
+VALIDATION RESULT:
+Array
+(
+    [valid] => 
+    [errors] => Array
+        (
+            [brand_id] => Brand_id is required.
+            [category_id] => Category_id is required.
+        )
+
+)

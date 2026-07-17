@@ -109,7 +109,7 @@
   line-height: 0.9;
 }
 
-@utility strike-price {
+@utility strike-selling_price {
   text-decoration: line-through;
   color: var(--color-muted-foreground);
   font-weight: 400;
