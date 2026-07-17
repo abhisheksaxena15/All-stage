@@ -21,6 +21,11 @@ class ProductImage extends BaseModel
         $this->fill($data);
     }
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
     public function getProductId(): int
     {
         return $this->productId;

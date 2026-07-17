@@ -6,6 +6,14 @@ import { UploadCloud, X, ImageIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
+const objectUrlCache = new WeakMap<File, string>();
+function getFilePreview(file: File): string {
+  if (!objectUrlCache.has(file)) {
+    objectUrlCache.set(file, URL.createObjectURL(file));
+  }
+  return objectUrlCache.get(file)!;
+}
+
 export interface ImageUploaderProps {
   multiple?: boolean;
   value?: File[];
@@ -104,7 +112,7 @@ export function ImageUploader({
           {value.map((f, idx) => (
             <PreviewTile
               key={`n-${f.name}-${idx}`}
-              src={URL.createObjectURL(f)}
+              src={getFilePreview(f)}
               onRemove={() => onChange(value.filter((_, i) => i !== idx))}
               badge="New"
               isPrimary={primaryIndex !== null && idx === primaryIndex}

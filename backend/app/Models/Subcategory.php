@@ -19,10 +19,28 @@ class Subcategory extends BaseModel
     private int $sortOrder = 0;
 
     private string $status = 'ACTIVE';
+    private ?string $categoryName = null;
+    private ?int $productsCount = null;
 
     public function __construct(array $data = [])
     {
         $this->fill($data);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'category_id' => $this->categoryId,
+            'category_name' => $this->categoryName,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'image' => $this->image,
+            'sort_order' => $this->sortOrder,
+            'status' => strtolower($this->status),
+            'products_count' => $this->productsCount ?? 0
+        ];
     }
 
     public function getId(): ?int

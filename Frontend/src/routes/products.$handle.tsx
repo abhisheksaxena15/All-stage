@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, Heart, Truck, ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
 import { getProduct, getRelated, mapDbProductToStorefront, useProductsList, PRODUCTS } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -55,6 +55,12 @@ function ProductPage() {
   const [openFaq, setOpenFaq] = useState(false);
   const [pincode, setPincode] = useState("");
   const [eta, setEta] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState(product.image);
+
+  useEffect(() => {
+    setActiveImage(product.image);
+  }, [product.image]);
+
   const off = Math.round(((product.mrp - product.selling_price) / product.mrp) * 100);
 
   const requireSize = () => {
@@ -86,16 +92,23 @@ function ProductPage() {
         {/* GALLERY */}
         <div className="space-y-3">
           <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-            <img src={product.image} alt={product.altText} className="h-full w-full object-cover" />
+            <img src={activeImage} alt={product.altText} className="h-full w-full object-cover" />
             <div className="absolute left-4 top-4 bg-molten px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-bone">
               -{off}% OFF
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[product.image, product.image, product.image].map((src, i) => (
-              <div key={i} className="aspect-square overflow-hidden bg-muted ring-1 ring-transparent hover:ring-ink">
-                <img src={src} alt={`${product.altText} — view ${i + 2}`} className="h-full w-full object-cover" />
-              </div>
+          <div className="grid grid-cols-4 gap-3">
+            {(product.images && product.images.length > 0 ? product.images : [product.image]).map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveImage(src)}
+                className={`aspect-square overflow-hidden bg-muted ring-2 transition ${
+                  activeImage === src ? "ring-molten" : "ring-transparent hover:ring-ink"
+                }`}
+              >
+                <img src={src} alt={`${product.altText} — view ${i + 1}`} className="h-full w-full object-cover" />
+              </button>
             ))}
           </div>
         </div>
@@ -124,10 +137,16 @@ function ProductPage() {
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Inclusive of all taxes · Shipping calculated at checkout</p>
 
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            A <span className="font-medium text-foreground">{product.fit.toLowerCase()}</span> cut in{" "}
-            {product.fabric.toLowerCase()} at {product.gsm} GSM — heavyweight, structured, built to hold shape wash after wash.
-          </p>
+          {product.description ? (
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+              {product.description}
+            </p>
+          ) : (
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              A <span className="font-medium text-foreground">{product.fit.toLowerCase()}</span> cut in{" "}
+              {product.fabric.toLowerCase()} at {product.gsm} GSM — heavyweight, structured, built to hold shape wash after wash.
+            </p>
+          )}
 
           {/* Size */}
           <div className="mt-6">

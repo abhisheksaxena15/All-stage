@@ -21,6 +21,7 @@ class SubcategoryController extends BaseController
      */
     public function index(): void
     {
+        $page = Request::query('page');
         $categoryId = Request::query('category_id');
         $categoryId = $categoryId !== null && $categoryId !== '' ? (int)$categoryId : null;
 
@@ -29,7 +30,23 @@ class SubcategoryController extends BaseController
             $this->service->getAll($categoryId)
         );
 
-        $this->success($subcategories);
+        if ($page !== null && $page !== '') {
+            $perPage = (int)Request::query('per_page', 25);
+            $pageNum = (int)$page;
+
+            $total = count($subcategories);
+            $offset = ($pageNum - 1) * $perPage;
+            $sliced = array_slice($subcategories, $offset, $perPage);
+
+            $this->success([
+                'data' => $sliced,
+                'total' => $total,
+                'page' => $pageNum,
+                'per_page' => $perPage
+            ]);
+        } else {
+            $this->success($subcategories);
+        }
     }
 
     /**

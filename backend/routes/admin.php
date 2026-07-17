@@ -84,6 +84,11 @@ $router->post(
     [ProductController::class, 'store']
 );
 
+$router->post(
+    '/api/admin/products/bulk-action',
+    [ProductController::class, 'bulkAction']
+);
+
 $router->put(
     '/api/admin/products/{id}',
     [ProductController::class, 'update']

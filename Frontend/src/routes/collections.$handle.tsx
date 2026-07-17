@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { getByCategory, CATEGORIES, useProductsList } from "@/lib/products";
+import { getByCategory, CATEGORIES, useProductsList, useCategoriesList } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 export const Route = createFileRoute("/collections/$handle")({
   head: ({ params }) => {
     const cat = CATEGORIES.find((c) => c.handle === params.handle);
-    const label = cat?.label ?? "Collection";
+    const label = cat?.label ?? params.handle.charAt(0).toUpperCase() + params.handle.slice(1);
     return {
       meta: [
         { title: `${label} — Allstag` },
@@ -19,11 +19,12 @@ export const Route = createFileRoute("/collections/$handle")({
 
 function CollectionPage() {
   const { handle } = Route.useParams();
-  const cat = CATEGORIES.find((c) => c.handle === handle);
+  const { categories } = useCategoriesList();
+  const cat = categories.find((c) => c.handle === handle) || CATEGORIES.find((c) => c.handle === handle);
   const { products } = useProductsList();
   const items = handle.toLowerCase() === "all" || handle.toLowerCase() === "shop-all"
     ? products
-    : products.filter((p) => p.category.toLowerCase() === handle.toLowerCase());
+    : products.filter((p) => p.category.toLowerCase() === handle.toLowerCase() || (cat && p.category.toLowerCase() === cat.label.toLowerCase()));
 
   return (
     <div>
@@ -32,7 +33,7 @@ function CollectionPage() {
           <div className="text-[11px] font-mono uppercase tracking-[0.4em] text-molten">
             Collection
           </div>
-          <h1 className="mt-2 text-display text-6xl lg:text-8xl">{cat?.label ?? "Shop"}</h1>
+          <h1 className="mt-2 text-display text-6xl lg:text-8xl">{cat?.label ?? handle}</h1>
           <p className="mt-4 max-w-xl text-sm text-bone/60">
             {items.length} pieces · Flat 50% off during Birthday Sale · Dispatched within 24 hours
           </p>
@@ -43,7 +44,7 @@ function CollectionPage() {
       <div className="sticky top-[65px] z-30 border-b border-ink/10 bg-bone/95 backdrop-blur lg:top-[105px]">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 overflow-x-auto px-4 py-3 text-xs font-mono uppercase tracking-widest lg:px-8">
           <div className="flex gap-2">
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <Link
                 key={c.handle}
                 to="/collections/$handle"

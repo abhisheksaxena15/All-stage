@@ -21,12 +21,30 @@ class CategoryController extends BaseController
      */
     public function index(): void
     {
+        $page = Request::query('page');
+
         $categories = array_map(
             fn($category) => $category->toArray(),
             $this->service->getAll()
         );
 
-        $this->success($categories);
+        if ($page !== null && $page !== '') {
+            $perPage = (int)Request::query('per_page', 25);
+            $pageNum = (int)$page;
+
+            $total = count($categories);
+            $offset = ($pageNum - 1) * $perPage;
+            $sliced = array_slice($categories, $offset, $perPage);
+
+            $this->success([
+                'data' => $sliced,
+                'total' => $total,
+                'page' => $pageNum,
+                'per_page' => $perPage
+            ]);
+        } else {
+            $this->success($categories);
+        }
     }
 
     /**

@@ -29,6 +29,8 @@ export type Product = {
   rating: number;
   reviewCount: number;
   badge?: string;
+  images?: string[];
+  description?: string;
 };
 
 export const PRODUCTS: Product[] = [
@@ -161,10 +163,17 @@ import { useState, useEffect } from "react";
 export function mapDbProductToStorefront(dbProd: any): Product {
   let imgUrl = dbProd.primary_image_url;
   if (!imgUrl && dbProd.images && dbProd.images.length > 0) {
-    imgUrl = dbProd.images[0].image_url;
+    imgUrl = dbProd.images[0].url || dbProd.images[0].image_url;
   }
   if (!imgUrl) {
     imgUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=1000";
+  }
+
+  let images: string[] = [];
+  if (dbProd.images && Array.isArray(dbProd.images)) {
+    images = dbProd.images.map((img: any) => img.url || img.image_url);
+  } else {
+    images = [imgUrl];
   }
 
   return {
@@ -184,6 +193,8 @@ export function mapDbProductToStorefront(dbProd: any): Product {
     rating: 4.8,
     reviewCount: 120,
     badge: dbProd.featured ? "FEATURED" : undefined,
+    images: images,
+    description: dbProd.description || "",
   };
 }
 

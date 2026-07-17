@@ -189,4 +189,42 @@ public function destroy(): void
 
     }
 }
+
+    /**
+     * POST /api/admin/products/bulk-action
+     */
+    public function bulkAction(): void
+    {
+        $data = Request::body();
+        $action = $data['action'] ?? null;
+        $ids = $data['ids'] ?? [];
+
+        if (!$action || empty($ids)) {
+            $this->error("Invalid request parameters", 400);
+            return;
+        }
+
+        try {
+            if ($action === 'delete') {
+                foreach ($ids as $id) {
+                    $this->service->delete((int)$id);
+                }
+                $this->success([], "Products Deleted");
+            } elseif ($action === 'activate') {
+                foreach ($ids as $id) {
+                    $this->service->updateStatus((int)$id, 'ACTIVE');
+                }
+                $this->success([], "Products Activated");
+            } elseif ($action === 'deactivate') {
+                foreach ($ids as $id) {
+                    $this->service->updateStatus((int)$id, 'DRAFT');
+                }
+                $this->success([], "Products Deactivated");
+            } else {
+                $this->error("Invalid action", 400);
+            }
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
 }

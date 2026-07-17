@@ -34,14 +34,14 @@ const empty: FormState = {
   sku: "",
   short_description: "",
   description: "",
- selling_price: "",
-compare_price: "",
-cost_price: "",
+  selling_price: "",
+  compare_price: "",
+  cost_price: "",
   category_id: "",
   subcategory_id: "",
   brand_id: "",
   featured: false,
-  status: "active",
+  status: "ACTIVE",
 };
 
 function slugify(s: string) {
@@ -95,7 +95,7 @@ export function ProductForm({ productId }: { productId?: string }) {
       subcategory_id: p.subcategory_id != null ? String(p.subcategory_id) : "",
       brand_id: p.brand_id != null ? String(p.brand_id) : "",
       featured: !!p.featured,
-      status: p.status ?? "active",
+      status: p.status ?? "ACTIVE",
     });
     setExistingImages(p.images ?? []);
     setSlugDirty(true);
@@ -141,6 +141,7 @@ export function ProductForm({ productId }: { productId?: string }) {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
     if (!form.slug.trim()) e.slug = "Required";
+    if (!form.sku.trim()) e.sku = "Required";
     if (!form.selling_price || Number(form.selling_price) < 0) e.selling_price = "Enter a valid selling_price";
     if (form.compare_price && Number(form.compare_price) >= Number(form.selling_price))
       e.compare_price = "Must be lower than selling_price";
@@ -234,7 +235,7 @@ export function ProductForm({ productId }: { productId?: string }) {
                     placeholder="heavyweight-oversized-tee"
                   />
                 </Field>
-                <Field label="SKU" error={errors.sku}>
+                <Field label="SKU" required error={errors.sku}>
                   <Input
                     value={form.sku}
                     onChange={(e) => update({ sku: e.target.value })}

@@ -84,4 +84,21 @@ class SubcategoryRepository extends BaseRepository
             return new Subcategory($row);
         }, $rows);
     }
+
+    public function findAll(): array
+    {
+        $sql = "
+            SELECT s.*, c.name as category_name,
+                   (SELECT COUNT(*) FROM products p WHERE p.subcategory_id = s.id) as products_count
+            FROM subcategories s
+            LEFT JOIN categories c ON c.id = s.category_id
+            ORDER BY s.sort_order ASC, s.id DESC
+        ";
+        $stmt = $this->db->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function ($row) {
+            return new Subcategory($row);
+        }, $rows);
+    }
 }

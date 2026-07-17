@@ -320,4 +320,17 @@ class ProductService
 
         return $this->repository->delete($id);
     }
+
+    /**
+     * Update Product Status
+     */
+    public function updateStatus(int $id, string $status): bool
+    {
+        $product = $this->repository->findById($id);
+        if (!$product) {
+            throw new Exception("Product not found.");
+        }
+        $product->setStatus($status);
+        return $this->repository->update($product);
+    }
 }
