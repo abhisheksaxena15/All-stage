@@ -29,12 +29,15 @@ abstract class BaseModel
      */
     public function fill(array $data): static
     {
-        foreach ($data as $key => $value) {
+        $reflection = new \ReflectionObject($this);
 
+        foreach ($data as $key => $value) {
             $property = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
 
-            if (property_exists($this, $property)) {
-                $this->$property = $value;
+            if ($reflection->hasProperty($property)) {
+                $prop = $reflection->getProperty($property);
+                $prop->setAccessible(true);
+                $prop->setValue($this, $value);
             }
         }
 

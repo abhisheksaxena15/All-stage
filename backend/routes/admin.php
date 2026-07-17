@@ -49,6 +49,11 @@ $router->post(
     [CategoryController::class, 'store']
 );
 
+$router->delete(
+    '/api/admin/categories/{id}',
+    [CategoryController::class, 'destroy']
+);
+
 use App\Controllers\SubcategoryController;
 
 $router->get(

@@ -80,4 +80,25 @@ class CategoryController extends BaseController
             );
         }
     }
+
+    /**
+     * DELETE /api/admin/categories/{id}
+     */
+    public function destroy(): void
+    {
+        $id = (int) Request::param('id');
+
+        try {
+            $this->service->delete($id);
+            $this->success(
+                [],
+                "Category Deleted"
+            );
+        } catch (Exception $e) {
+            $this->error(
+                $e->getMessage(),
+                400
+            );
+        }
+    }
 }
