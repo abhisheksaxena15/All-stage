@@ -41,10 +41,20 @@ class OrderService
             throw new Exception("Shipping details (name, email, phone) are required.");
         }
 
+        $productRepo = new \App\Repositories\ProductRepository();
+
         // Calculate total amount
         $totalAmount = 0.0;
         foreach ($itemsData as $item) {
-            $price = (float)($item['price'] ?? 0.0);
+            $price = 0.0;
+            if (!empty($item['handle'])) {
+                $product = $productRepo->findBySlug($item['handle']);
+                if ($product) {
+                    $price = (float)$product->getSellingPrice();
+                }
+            } else {
+                $price = (float)($item['price'] ?? 0.0);
+            }
             $qty = (int)($item['quantity'] ?? 1);
             $totalAmount += $price * $qty;
         }
@@ -74,8 +84,6 @@ class OrderService
         // Save order in database
         $orderId = $this->repository->create($order);
         $order->setId($orderId);
-
-        $productRepo = new \App\Repositories\ProductRepository();
 
         // Save line items
         $orderItems = [];
