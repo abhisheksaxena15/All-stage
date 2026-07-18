@@ -542,6 +542,25 @@ The preview URL and published URL are wired via Lovable. Migrations run automati
 
 ---
 
+## 11. Changing Admin Credentials & Password Recovery
+
+If you want to manually update the email or password in the database (e.g., via phpMyAdmin):
+1. Generate a secure bcrypt password hash by running:
+   ```bash
+   php -r "echo password_hash('YourNewPasswordHere', PASSWORD_BCRYPT);"
+   ```
+2. Update the `admins` table:
+   ```sql
+   UPDATE admins 
+   SET email = 'your.new.email@gmail.com', 
+       password = 'PASTE_THE_GENERATED_HASH_HERE' 
+   WHERE id = 3;  -- Replace with admin ID
+   ```
+
+You can also reset a forgotten password directly in the application using the **Forgot Password** link on the login screen. It will generate a 6-digit verification code, which is written to your inbox (or logged locally to `backend/logs/mail.log` if SMTP is disabled/restricted).
+
+---
+
 ## 12. Change Log (keep updated!)
 
 - **2026-07-13** — Re-introduced **size variants** across the stack. `CartContext` items now keyed by `handle + size` (line key: `${handle}::${size}`); `addItem/removeItem/updateQty` take a `size` arg. PDP shows a size grid with validation before Add-to-Bag / Buy-Now. ProductCard "Quick Add" opens an inline size chip picker on hover. Cart renders the selected size on each line. Bumped `localStorage` key to `allstag_cart_v3` (older carts are dropped on first load). `cart.item_added` / `cart.item_removed` event payloads now include `size`.

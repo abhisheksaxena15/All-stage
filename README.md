@@ -167,8 +167,25 @@ Choose this option if you want to run the backend via command line without placi
 ## Default Login Credentials
 
 Use these credentials to log in to the Admin Panel:
-* **Admin Email**: `admin@allstage.com`
-* **Admin Password**: `admin123`
+* **Default Admin Email**: `admin@allstage.com` (Password: `admin123`)
+* **Verified Super Admin Email**: `abhisheksxna.15@gmail.com` (Password: `Abhishek@12121`)
+
+### Changing Admin Credentials & Password Recovery
+
+If you want to manually update the email or password in the database (e.g., via phpMyAdmin):
+1. Generate a secure bcrypt password hash by running:
+   ```bash
+   php -r "echo password_hash('YourNewPasswordHere', PASSWORD_BCRYPT);"
+   ```
+2. Update the `admins` table:
+   ```sql
+   UPDATE admins 
+   SET email = 'your.new.email@gmail.com', 
+       password = 'PASTE_THE_GENERATED_HASH_HERE' 
+   WHERE id = 3;  -- Replace with admin ID
+   ```
+
+You can also reset a forgotten password directly in the application using the **Forgot Password** link on the login screen. It will generate a 6-digit verification code, which is written to your inbox (or logged locally to `backend/logs/mail.log` if SMTP is disabled/restricted).
 
 ---
 

@@ -12,7 +12,9 @@ import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
+  LogOut,
 } from "lucide-react";
+import { useAdminAuth } from "@/lib/admin-auth";
 import {
   Area,
   AreaChart,
@@ -95,6 +97,7 @@ const num = (n: number) => new Intl.NumberFormat("en-IN").format(n || 0);
 // ---------- Page ----------
 
 function DashboardPage() {
+  const { logout } = useAdminAuth();
   const stats = useQuery({
     queryKey: ["admin", "dashboard", "stats"],
     queryFn: () => adminApi.get<DashboardStats>("/dashboard/stats"),
@@ -134,13 +137,24 @@ function DashboardPage() {
             Live snapshot of orders, revenue and catalog health.
           </p>
         </div>
-        <div className="text-xs text-muted-foreground">
-          {new Date().toLocaleDateString("en-IN", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-muted-foreground">
+            {new Date().toLocaleDateString("en-IN", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+          <button
+            onClick={() => {
+              void logout();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-red-200 hover:border-red-500 text-red-500 hover:bg-red-50 text-xs font-medium rounded transition-colors"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Logout
+          </button>
         </div>
       </div>
 
