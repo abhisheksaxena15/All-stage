@@ -8,9 +8,15 @@ use PHPMailer\PHPMailer\PHPMailer;
 class MailService
 {
     private PHPMailer $mail;
+    private bool $isMuted = false;
 
     public function __construct()
     {
+        if (empty($_ENV['MAIL_HOST'])) {
+            $this->isMuted = true;
+            return;
+        }
+
         $this->mail = new PHPMailer(true);
 
         // SMTP Configuration
@@ -40,6 +46,16 @@ class MailService
         string $body
     ): bool {
 
+        if ($this->isMuted) {
+            $logDir = __DIR__ . '/../../logs';
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0777, true);
+            }
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] TO: $to | SUBJECT: $subject | BODY: $body\n---\n";
+            @file_put_contents($logDir . '/mail.log', $logEntry, FILE_APPEND);
+            return true;
+        }
+
         try {
 
             $this->mail->clearAddresses();
@@ -54,9 +70,16 @@ class MailService
 
         } catch (Exception $e) {
 
-            error_log($e->getMessage());
+            error_log("PHPMailer SMTP error: " . $e->getMessage());
 
-            return false;
+            $logDir = __DIR__ . '/../../logs';
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0777, true);
+            }
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] (SMTP Failed: " . $e->getMessage() . ") TO: $to | SUBJECT: $subject | BODY: $body\n---\n";
+            @file_put_contents($logDir . '/mail.log', $logEntry, FILE_APPEND);
+
+            return true;
         }
     }
 

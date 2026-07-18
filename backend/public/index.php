@@ -41,6 +41,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+if (isset($_ENV['TIMEZONE'])) {
+    date_default_timezone_set($_ENV['TIMEZONE']);
+}
+
 
 use App\Core\Router;
 
@@ -54,6 +58,8 @@ $router = new Router();
 
 require_once __DIR__ . '/../routes/admin.php';
 require_once __DIR__ . '/../routes/product.php';
+require_once __DIR__ . '/../routes/auth.php';
+require_once __DIR__ . '/../routes/public.php';
 
 /*
 |--------------------------------------------------------------------------

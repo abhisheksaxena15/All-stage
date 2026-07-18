@@ -22,3 +22,8 @@ $router->post(
     '/api/auth/reset-password',
     [AuthController::class, 'resetPassword']
 );
+
+use App\Controllers\CustomerAuthController;
+
+$router->post('/api/auth/customer/send-otp', [CustomerAuthController::class, 'sendOtp']);
+$router->post('/api/auth/customer/verify-otp', [CustomerAuthController::class, 'verifyOtp']);

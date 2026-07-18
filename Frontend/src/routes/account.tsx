@@ -27,12 +27,21 @@ const EMPTY: Profile = { name: "", email: "", phone: "", address: "", city: "", 
 const KEY = "allstag_profile_v1";
 const AUTH_KEY = "allstag_auth_v1";
 
+const apiBase = import.meta.env.VITE_API_URL;
+
 export function AccountPage() {
   const { count } = useCart();
   const [signedIn, setSignedIn] = useState(false);
   const [profile, setProfile] = useState<Profile>(EMPTY);
   const [saved, setSaved] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  // OTP auth states
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [otpSentMessage, setOtpSentMessage] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -44,33 +53,157 @@ export function AccountPage() {
   }, []);
 
   const save = () => {
-    const isNew = localStorage.getItem(AUTH_KEY) !== "1";
     localStorage.setItem(KEY, JSON.stringify(profile));
     localStorage.setItem(AUTH_KEY, "1");
-    setSignedIn(true);
     setSaved(true);
     setTimeout(() => setSaved(false), 1600);
-    // Fire-and-forget event — welcome email on signup, CRM sync on update.
-    import("@/lib/events.functions").then(({ emitEvent }) =>
-      emitEvent({
-        data: {
-          topic: "allstag.users.v1",
-          type: isNew ? "user.signed_up" : "user.updated",
-          key: profile.email || "anon",
-          data: { userId: profile.email, email: profile.email, name: profile.name },
-        },
-      }),
-    ).catch((e) => console.warn("[users:emit-failed]", e));
+  };
+
+  const handleSendOtp = async () => {
+    if (!profile.email) {
+      setError("Email is required.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${apiBase}/auth/customer/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: profile.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to send OTP.");
+      }
+      setOtpSentMessage(`OTP code has been sent to ${profile.email}`);
+      setStep("otp");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${apiBase}/auth/customer/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: profile.email,
+          otp,
+          name: profile.name,
+          phone: profile.phone
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Invalid or expired OTP.");
+      }
+
+      const customerData = data.data;
+      const newProfile = {
+        ...profile,
+        name: customerData.name || profile.name,
+        email: customerData.email || profile.email,
+        phone: customerData.phone || profile.phone,
+      };
+
+      localStorage.setItem(KEY, JSON.stringify(newProfile));
+      localStorage.setItem(AUTH_KEY, "1");
+      setProfile(newProfile);
+      setSignedIn(true);
+
+      // Welcome / CRM Event hook
+      import("@/lib/events.functions").then(({ emitEvent }) =>
+        emitEvent({
+          data: {
+            topic: "allstag.users.v1",
+            type: "user.signed_up",
+            key: newProfile.email || "anon",
+            data: { userId: newProfile.email, email: newProfile.email, name: newProfile.name },
+          },
+        }),
+      ).catch((e) => console.warn("[users:emit-failed]", e));
+
+    } catch (err: any) {
+      setError(err.message || "Invalid or expired OTP.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const signOut = () => {
     localStorage.removeItem(AUTH_KEY);
     setSignedIn(false);
+    setStep("credentials");
+    setOtp("");
+    setError(null);
   };
 
   if (!hydrated) return null;
 
   if (!signedIn) {
+    if (step === "otp") {
+      return (
+        <div className="mx-auto max-w-md px-4 py-16 lg:py-24">
+          <div className="text-[11px] font-mono uppercase tracking-[0.4em] text-molten">Verify OTP</div>
+          <h1 className="mt-2 text-display text-5xl">Verify</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Enter the 6-digit code sent to <strong className="text-ink">{profile.email}</strong>.
+          </p>
+
+          {otpSentMessage && (
+            <div className="mt-4 bg-molten/10 p-3 text-xs text-molten font-mono uppercase tracking-wider">
+              ✦ {otpSentMessage}
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 bg-red-500/10 p-3 text-xs text-red-500 font-mono uppercase tracking-wider">
+              ✕ {error}
+            </div>
+          )}
+
+          <div className="mt-8 space-y-4">
+            <Field
+              label="Verification Code"
+              value={otp}
+              onChange={(v) => setOtp(v.replace(/\D/g, "").slice(0, 6))}
+              placeholder="000000"
+            />
+            
+            <button
+              onClick={handleVerifyOtp}
+              disabled={submitting || otp.length !== 6}
+              className="w-full bg-molten py-4 text-sm font-bold uppercase tracking-widest text-bone hover:bg-molten-deep disabled:opacity-40"
+            >
+              {submitting ? "Verifying..." : "Verify & Continue"}
+            </button>
+
+            <button
+              onClick={() => {
+                setStep("credentials");
+                setError(null);
+                setOtp("");
+              }}
+              disabled={submitting}
+              className="w-full border border-ink/20 py-4 text-sm font-bold uppercase tracking-widest text-ink hover:bg-ink/5 disabled:opacity-40"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="mx-auto max-w-md px-4 py-16 lg:py-24">
         <div className="text-[11px] font-mono uppercase tracking-[0.4em] text-molten">Members Only</div>
@@ -79,16 +212,22 @@ export function AccountPage() {
           Save addresses, track orders, and check out in one tap.
         </p>
 
+        {error && (
+          <div className="mt-4 bg-red-500/10 p-3 text-xs text-red-500 font-mono uppercase tracking-wider">
+            ✕ {error}
+          </div>
+        )}
+
         <div className="mt-8 space-y-4">
           <Field label="Full Name" value={profile.name} onChange={(v) => setProfile({ ...profile, name: v })} placeholder="Aarav Mehta" />
           <Field label="Email" type="email" value={profile.email} onChange={(v) => setProfile({ ...profile, email: v })} placeholder="you@allstag.co" />
           <Field label="Phone" value={profile.phone} onChange={(v) => setProfile({ ...profile, phone: v.replace(/\D/g, "").slice(0, 10) })} placeholder="10-digit mobile" />
           <button
-            onClick={save}
-            disabled={!profile.name || !profile.email}
+            onClick={handleSendOtp}
+            disabled={submitting || !profile.name || !profile.email}
             className="w-full bg-molten py-4 text-sm font-bold uppercase tracking-widest text-bone hover:bg-molten-deep disabled:opacity-40"
           >
-            Continue
+            {submitting ? "Sending OTP..." : "Continue"}
           </button>
           <p className="text-center text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
             By continuing you agree to our terms &amp; privacy

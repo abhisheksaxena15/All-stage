@@ -48,4 +48,38 @@ class CustomerService
 
         return $customer;
     }
+
+    /**
+     * Create or retrieve customer profile for OTP login/register
+     */
+    public function loginOrRegister(string $email, string $name, ?string $phone): Customer
+    {
+        $customer = $this->repository->findByEmail($email);
+
+        if ($customer) {
+            $updated = false;
+            if (!empty($name) && $customer->getName() !== $name) {
+                $customer->setName($name);
+                $updated = true;
+            }
+            if (!empty($phone) && $customer->getPhone() !== $phone) {
+                $customer->setPhone($phone);
+                $updated = true;
+            }
+            if ($updated) {
+                $this->repository->update($customer);
+            }
+        } else {
+            $customer = new Customer();
+            $customer->setName($name ?: 'Valued Customer');
+            $customer->setEmail($email);
+            $customer->setPhone($phone);
+            $customer->setOrdersCount(0);
+            $customer->setTotalSpent(0.00);
+            $id = $this->repository->create($customer);
+            $customer->setId($id);
+        }
+
+        return $customer;
+    }
 }

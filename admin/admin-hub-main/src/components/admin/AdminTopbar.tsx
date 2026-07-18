@@ -1,9 +1,10 @@
-import { Bell, Search, Sun, Moon, Plus } from "lucide-react";
+import { Bell, Search, Sun, Moon, Plus, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { AdminUser } from "@/lib/admin-auth";
+import { useAdminAuth, type AdminUser } from "@/lib/admin-auth";
 
 export function AdminTopbar({ user }: { user: AdminUser | null }) {
   const [dark, setDark] = useState(false);
+  const { logout } = useAdminAuth();
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -62,6 +63,15 @@ export function AdminTopbar({ user }: { user: AdminUser | null }) {
           <div className="text-sm font-medium">{user?.name ?? "Admin"}</div>
           <div className="text-xs text-muted-foreground">{user?.role ?? "Administrator"}</div>
         </div>
+        <button
+          onClick={() => {
+            void logout();
+          }}
+          title="Logout"
+          className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded hover:bg-muted"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </header>
   );
