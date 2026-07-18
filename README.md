@@ -1,0 +1,183 @@
+# Allstag E-Commerce Platform
+
+Allstag is a full-stack, heavyweight streetwear e-commerce platform. It is split into three main components: a custom PHP REST API, an admin dashboard panel, and a storefront client.
+
+---
+
+## Project Structure
+
+* **/backend**: Custom lightweight PHP backend API. Handles routing, controllers, database models, and routes requests to MySQL via PDO.
+* **/Frontend**: Storefront client built with React, Vite, and TanStack Start / TanStack Router.
+* **/admin/admin-hub-main**: Administrative dashboard panel built with React, Vite, TanStack Router, Radix UI, and Recharts.
+
+---
+
+## Local Setup Prerequisites
+
+Ensure you have the following installed on your machine:
+1. **XAMPP** (includes Apache and MySQL)
+2. **Node.js** (v18 or higher) & **npm** (comes with Node)
+3. **Git** (for cloning and version control)
+
+---
+
+## Step-by-Step Installation Guide
+
+Follow these steps to run the complete stack locally using XAMPP:
+
+### Step 1: Clone the Project into XAMPP htdocs
+For XAMPP Apache to serve your PHP backend automatically, the project folder **must** reside inside XAMPP's `htdocs` directory:
+```bash
+# Navigate to htdocs
+cd C:\xampp\htdocs
+
+# Clone or move your files here so the structure matches:
+# C:\xampp\htdocs\<your-folder-name>\All-stage
+```
+*(For example, if your folder is `all-stage`, the full path will be `C:\xampp\htdocs\all-stage\All-stage`).*
+
+---
+
+### Step 2: Database Setup (MySQL)
+1. Launch the **XAMPP Control Panel** and click **Start** next to **Apache** and **MySQL**.
+2. Open your browser and navigate to **phpMyAdmin** (`http://localhost/phpmyadmin`).
+3. Click **New** in the left sidebar, name the database `allstag`, and click **Create**.
+4. To import the schema and data:
+   * Select the `allstag` database.
+   * Go to the **Import** tab.
+   * Choose and import [allstage_complete.sql](file:///c:/xampp/htdocs/all-stage/All-stage/backend/database/allstage_complete.sql) from the `backend/database/` directory. This single file sets up all tables, foreign key constraints, default categories/products, and the initial administrator account.
+
+---
+
+### Step 3: Configure & Run the PHP Backend
+
+You have two options to run your backend API server locally:
+
+#### Option A: Running with XAMPP (Apache)
+Choose this option if you are using XAMPP's Apache server to host your local files.
+
+1. Navigate to the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+2. Create a `.env` file with the following configuration:
+   ```ini
+   APP_NAME="Allstag"
+   APP_ENV=local
+   APP_DEBUG=true
+   # Point to the XAMPP htdocs subdirectory path:
+   APP_URL=http://localhost/all-stage/All-stage/backend/public
+   TIMEZONE=Asia/Kolkata
+
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=allstag
+   DB_USERNAME=root
+   DB_PASSWORD=""
+   ```
+   *(Note: Casing matters! Make sure the folder names in `APP_URL` exactly match the folders inside your `htdocs` directory).*
+
+3. **Verify Apache Routing**:
+   Ensure the `RewriteBase` in `backend/public/.htaccess` matches your subdirectory path:
+   ```apache
+   RewriteBase /all-stage/All-stage/backend/public/
+   ```
+
+#### Option B: Running without XAMPP (PHP Built-in Server)
+Choose this option if you want to run the backend via command line without placing it in XAMPP's `htdocs` directory.
+
+1. Navigate to the backend public directory:
+   ```bash
+   cd backend/public
+   ```
+2. Start the PHP built-in server:
+   ```bash
+   php -S localhost:8000
+   ```
+3. Create a `.env` file in the `backend/` directory with the following configuration:
+   ```ini
+   APP_NAME="Allstag"
+   APP_ENV=local
+   APP_DEBUG=true
+   # Point to the local PHP server port:
+   APP_URL=http://localhost:8000
+   TIMEZONE=Asia/Kolkata
+
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=allstag
+   DB_USERNAME=root
+   DB_PASSWORD=""
+   ```
+4. **Update Frontend & Admin configurations** to point to the port `8000` API:
+   * In [admin/admin-hub-main/.env](file:///c:/xampp/htdocs/all-stage/All-stage/admin/admin-hub-main/.env):
+     ```ini
+     VITE_ADMIN_API_URL=http://localhost:8000/api/admin
+     ```
+   * In [Frontend/.env](file:///c:/xampp/htdocs/all-stage/All-stage/Frontend/.env):
+     ```ini
+     VITE_API_URL=http://localhost:8000/api
+     ```
+
+---
+
+### Step 4: Configure & Run the Admin Panel
+1. Open a new terminal and navigate to the admin directory:
+   ```bash
+   cd admin/admin-hub-main
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file in the `admin/admin-hub-main/` directory:
+   ```ini
+   # Points the admin panel to the backend API served by Apache
+   VITE_ADMIN_API_URL=http://localhost/all-stage/All-stage/backend/public/api/admin
+   ```
+4. Start the admin development server:
+   ```bash
+   npm run dev
+   ```
+   *(Vite will serve the panel locally, e.g. on `http://localhost:8080` or `http://localhost:8084`).*
+
+---
+
+### Step 5: Configure & Run the Storefront (Frontend)
+1. Open another terminal and navigate to the storefront directory:
+   ```bash
+   cd Frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file in the `Frontend/` directory:
+   ```ini
+   # Points the storefront to the public backend API served by Apache
+   VITE_API_URL=http://localhost/all-stage/All-stage/backend/public/api
+   ```
+4. Start the storefront development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Default Login Credentials
+
+Use these credentials to log in to the Admin Panel:
+* **Admin Email**: `admin@allstage.com`
+* **Admin Password**: `admin123`
+
+---
+
+## Architectural Highlights
+
+### 1. Kafka Event-Driven Fallback
+The project implements a decoupling architecture via event topics. When deploying to production, events can publish to a Kafka broker REST proxy (`KAFKA_REST_URL`).
+* **Local Development**: If no `KAFKA_REST_URL` is set, the system prints `[events:local]` and runs in-process in-memory queues using local consumer dispatchers. You do **not** need Kafka installed locally to test workflows.
+
+### 2. Live Page View Tracking & Dynamic Dashboard
+* Storefront routes track visits using TanStack's `useLocation()` hook.
+* Real-time metrics (Total/Pending/Completed orders, revenue, customer totals, and unique visitors) are queried dynamically from MySQL tables to feed the admin dashboard stats and chart trends.
