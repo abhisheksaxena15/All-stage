@@ -26,11 +26,11 @@ export type EventTopic =
   | "allstag.audit.v1";
 
 export interface EventEnvelope<T = unknown> {
-  id: string;              // uuid — idempotency key for consumers
-  type: string;            // e.g. "order.paid"
-  topic: EventTopic;
-  key: string;             // partition key (userId, orderId…)
-  occurredAt: string;      // ISO-8601
+  id: string; // uuid — idempotency key for consumers
+  type: string; // e.g. "order.paid"
+  topic: EventTopic; // e.g. "order.paid"
+  key: string; // partition key (userId, orderId…)
+  occurredAt: string; // ISO-8601
   source: "web" | "webhook" | "cron" | "admin";
   version: 1;
   data: T;

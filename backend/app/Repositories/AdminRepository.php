@@ -8,7 +8,7 @@ use PDO;
 class AdminRepository extends BaseRepository
 {
     protected string $table = 'admins';
-    protected string $model = Brand::class;
+    protected string $model = Admin::class;
 
     /**
      * Find admin by email
@@ -80,7 +80,6 @@ class AdminRepository extends BaseRepository
     public function create(Admin $admin): int
     {
         $sql = "INSERT INTO {$this->table}
-
         (
             name,
             email,
@@ -88,9 +87,7 @@ class AdminRepository extends BaseRepository
             role,
             status
         )
-
         VALUES
-
         (
             :name,
             :email,
@@ -102,17 +99,11 @@ class AdminRepository extends BaseRepository
         $stmt = $this->db->prepare($sql);
 
         $stmt->execute([
-
             ':name' => $admin->getName(),
-
             ':email' => $admin->getEmail(),
-
             ':password' => $admin->getPassword(),
-
             ':role' => $admin->getRole(),
-
             ':status' => $admin->getStatus()
-
         ]);
 
         return (int)$this->db->lastInsertId();
@@ -135,4 +126,23 @@ class AdminRepository extends BaseRepository
 
         return $stmt->fetchColumn() > 0;
     }
+   /**
+    * Update Password
+    */
+   public function updatePassword(
+       int $id,
+       string $password
+   ): bool
+   {
+       $sql = "UPDATE {$this->table}
+               SET password = :password
+               WHERE id = :id";
+
+       $stmt = $this->db->prepare($sql);
+
+       return $stmt->execute([
+           ':id' => $id,
+           ':password' => $password
+       ]);
+   }
 }

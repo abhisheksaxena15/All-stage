@@ -2,3 +2,6 @@
 .env
 .env.*
 !.env.example
+
+# ZIP archives
+All-stage-auth-mailv6.zip

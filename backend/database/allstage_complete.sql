@@ -437,6 +437,26 @@ LOCK TABLES `visits` WRITE;
 INSERT INTO `visits` VALUES (1,'::1','/products/oversized-t-shirt','2026-07-18 10:24:49'),(2,'::1','/','2026-07-18 10:33:08'),(3,'::1','/products/oversized-tee','2026-07-18 10:33:09'),(4,'::1','/products/oversized-t-shirt','2026-07-18 10:44:41');
 /*!40000 ALTER TABLE `visits` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `otp_codes`
+--
+
+DROP TABLE IF EXISTS `otp_codes`;
+CREATE TABLE `otp_codes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `admin_id` int(10) unsigned NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `otp` varchar(6) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `is_used` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `admin_id` (`admin_id`),
+  KEY `email` (`email`),
+  CONSTRAINT `fk_otp_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
