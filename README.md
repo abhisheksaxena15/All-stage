@@ -172,7 +172,19 @@ Use these credentials to log in to the Admin Panel:
 
 ### Changing Admin Credentials & Password Recovery
 
-If you want to manually update the email or password in the database (e.g., via phpMyAdmin):
+#### Option A: Prior to importing (in the SQL dump file)
+If you want to customize your email and password *before* importing the database into phpMyAdmin:
+1. Open the [allstage_complete.sql](file:///c:/xampp/htdocs/all-stage/All-stage/backend/database/allstage_complete.sql) file.
+2. Locate the line inserting the default admin user (around line 148):
+   ```sql
+   INSERT INTO `admins` VALUES (3,'Abhishek Saxena','your.email@example.com','...',...);
+   ```
+3. Change `'abhisheksxna.15@gmail.com'` to your desired email.
+4. Replace the bcrypt password hash (the 4th value) with a new hash generated via the PHP command below.
+5. Save the file and import it into phpMyAdmin.
+
+#### Option B: Updating the database directly (post-import)
+If you have already imported the database and want to manually update details:
 1. Generate a secure bcrypt password hash by running:
    ```bash
    php -r "echo password_hash('YourNewPasswordHere', PASSWORD_BCRYPT);"
