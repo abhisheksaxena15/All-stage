@@ -93,4 +93,55 @@ class CustomerAuthController
             Response::error($e->getMessage(), 500);
         }
     }
+
+    /**
+     * GET /api/auth/customer/orders
+     */
+    public function getOrders(): void
+    {
+        $email = Request::query('email');
+
+        if (empty($email)) {
+            Response::error("Email is required.", 422);
+            return;
+        }
+
+        try {
+            $customerRepo = new \App\Repositories\CustomerRepository();
+            $customer = $customerRepo->findByEmail($email);
+
+            if (!$customer) {
+                Response::success([], "No customer found.");
+                return;
+            }
+
+            $orderService = new \App\Services\OrderService();
+            $orders = $orderService->getCustomerOrders($customer->getId());
+
+            $formatted = array_map(function($order) {
+                $items = array_map(function($item) {
+                    return [
+                        'product_name' => $item->getProductName(),
+                        'price' => $item->getPrice(),
+                        'quantity' => $item->getQuantity(),
+                        'size' => $item->getSize(),
+                    ];
+                }, $order->getItems());
+
+                return [
+                    'id' => $order->getId(),
+                    'order_number' => $order->getOrderNumber(),
+                    'total_amount' => $order->getTotalAmount(),
+                    'order_status' => strtolower($order->getOrderStatus()),
+                    'payment_status' => strtolower($order->getPaymentStatus()),
+                    'created_at' => $order->getCreatedAt(),
+                    'items' => $items
+                ];
+            }, $orders);
+
+            Response::success($formatted, "Orders retrieved successfully.");
+        } catch (Exception $e) {
+            Response::error($e->getMessage(), 500);
+        }
+    }
 }

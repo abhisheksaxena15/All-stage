@@ -27,3 +27,4 @@ use App\Controllers\CustomerAuthController;
 
 $router->post('/api/auth/customer/send-otp', [CustomerAuthController::class, 'sendOtp']);
 $router->post('/api/auth/customer/verify-otp', [CustomerAuthController::class, 'verifyOtp']);
+$router->get('/api/auth/customer/orders', [CustomerAuthController::class, 'getOrders']);

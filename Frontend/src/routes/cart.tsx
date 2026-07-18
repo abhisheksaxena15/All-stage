@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, ShoppingBag, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
@@ -28,6 +28,26 @@ function CartPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const isSignedIn = localStorage.getItem("allstag_auth_v1") === "1";
+      if (isSignedIn) {
+        const raw = localStorage.getItem("allstag_profile_v1");
+        if (raw) {
+          const profile = JSON.parse(raw);
+          if (profile.name) setName(profile.name);
+          if (profile.email) setEmail(profile.email);
+          if (profile.phone) setPhone(profile.phone);
+          if (profile.address) setAddress(profile.address);
+          if (profile.city) setCity(profile.city);
+          if (profile.pincode) setPincode(profile.pincode);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to autofill shipping details", e);
+    }
+  }, [showCheckout]);
 
   const shipping = subtotal === 0 ? 0 : subtotal >= 999 ? 0 : 49;
   const total = subtotal + shipping;

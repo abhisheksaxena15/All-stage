@@ -91,6 +91,26 @@ class OrderRepository extends BaseRepository
         return array_map(fn($row) => new OrderItem($row), $rows);
     }
 
+    /**
+     * Find all orders belonging to a customer
+     */
+    public function findByCustomerId(int $customerId): array
+    {
+        $sql = "SELECT * FROM orders WHERE customer_id = :customer_id ORDER BY id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':customer_id' => $customerId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $orders = [];
+        foreach ($rows as $row) {
+            $order = new Order($row);
+            $order->setItems($this->findItemsByOrderId($order->getId()));
+            $orders[] = $order;
+        }
+
+        return $orders;
+    }
+
     public function findAllPaginated(int $page, int $perPage, ?string $search = null, ?string $paymentStatus = null, ?string $orderStatus = null): array
     {
         $offset = ($page - 1) * $perPage;

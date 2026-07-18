@@ -23,6 +23,23 @@ type Profile = {
   pincode: string;
 };
 
+type OrderItem = {
+  product_name: string;
+  price: number;
+  quantity: number;
+  size?: string;
+};
+
+type Order = {
+  id: number;
+  order_number: string;
+  total_amount: number;
+  order_status: string;
+  payment_status: string;
+  created_at: string;
+  items: OrderItem[];
+};
+
 const EMPTY: Profile = { name: "", email: "", phone: "", address: "", city: "", pincode: "" };
 const KEY = "allstag_profile_v1";
 const AUTH_KEY = "allstag_auth_v1";
@@ -43,11 +60,37 @@ export function AccountPage() {
   const [submitting, setSubmitting] = useState(false);
   const [otpSentMessage, setOtpSentMessage] = useState<string | null>(null);
 
+  // Orders states
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  const fetchOrders = async (email: string) => {
+    setLoadingOrders(true);
+    try {
+      const res = await fetch(`${apiBase}/auth/customer/orders?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders(data.data || []);
+      }
+    } catch (e) {
+      console.warn("Failed to load customer orders", e);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   useEffect(() => {
     try {
-      setSignedIn(localStorage.getItem(AUTH_KEY) === "1");
+      const authVal = localStorage.getItem(AUTH_KEY) === "1";
+      setSignedIn(authVal);
       const raw = localStorage.getItem(KEY);
-      if (raw) setProfile({ ...EMPTY, ...JSON.parse(raw) });
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setProfile({ ...EMPTY, ...parsed });
+        if (authVal && parsed.email) {
+          fetchOrders(parsed.email);
+        }
+      }
     } catch {}
     setHydrated(true);
   }, []);
@@ -120,6 +163,7 @@ export function AccountPage() {
       localStorage.setItem(AUTH_KEY, "1");
       setProfile(newProfile);
       setSignedIn(true);
+      fetchOrders(newProfile.email);
 
       // Welcome / CRM Event hook
       import("@/lib/events.functions").then(({ emitEvent }) =>
@@ -262,7 +306,7 @@ export function AccountPage() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
         {/* Sidebar */}
         <aside className="space-y-3">
-          <SideCard icon={Package} title="Orders" value="0 in progress" href="#orders" />
+          <SideCard icon={Package} title="Orders" value={`${orders.filter(o => o.order_status !== 'delivered' && o.order_status !== 'cancelled').length} in progress`} href="#orders" />
           <Link to="/cart" className="block">
             <SideCard icon={Heart} title="Your Bag" value={`${count} item${count === 1 ? "" : "s"}`} />
           </Link>
@@ -298,17 +342,78 @@ export function AccountPage() {
       {/* Orders */}
       <section id="orders" className="mt-14 border-t border-ink/10 pt-10">
         <h2 className="text-xs font-mono uppercase tracking-widest text-molten">Recent Orders</h2>
-        <div className="mt-6 border border-dashed border-ink/20 p-10 text-center">
-          <Package className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">No orders yet — your first fit awaits.</p>
-          <Link
-            to="/collections/$handle"
-            params={{ handle: "shop-all" }}
-            className="mt-4 inline-block bg-molten px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-bone hover:bg-molten-deep"
-          >
-            Start shopping
-          </Link>
-        </div>
+        {loadingOrders ? (
+          <div className="mt-6 text-center text-sm font-mono text-muted-foreground uppercase tracking-widest py-10">
+            Loading your orders...
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="mt-6 border border-dashed border-ink/20 p-10 text-center">
+            <Package className="mx-auto h-8 w-8 text-muted-foreground" />
+            <p className="mt-3 text-sm text-muted-foreground">No orders yet — your first fit awaits.</p>
+            <Link
+              to="/collections/$handle"
+              params={{ handle: "shop-all" }}
+              className="mt-4 inline-block bg-molten px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-bone hover:bg-molten-deep"
+            >
+              Start shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-6">
+            {orders.map((order) => (
+              <div key={order.id} className="border border-ink/10 bg-card p-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ink/10 pb-4">
+                  <div>
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">Order Number</span>
+                    <div className="font-mono text-sm font-bold text-ink">{order.order_number}</div>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">Date Placed</span>
+                    <div className="text-sm font-semibold">{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">Total Amount</span>
+                    <div className="text-sm font-bold text-molten">₹{parseFloat(order.total_amount.toString()).toLocaleString('en-IN')}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider font-bold ${
+                      order.order_status === 'delivered' ? 'bg-emerald-500/10 text-emerald-600' :
+                      order.order_status === 'cancelled' ? 'bg-red-500/10 text-red-600' :
+                      'bg-molten/10 text-molten'
+                    }`}>
+                      {order.order_status}
+                    </span>
+                    <span className={`px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider font-bold ${
+                      order.payment_status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' :
+                      'bg-amber-500/10 text-amber-600'
+                    }`}>
+                      {order.payment_status}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h4 className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mb-2">Items</h4>
+                  <ul className="divide-y divide-ink/5">
+                    {order.items.map((item, idx) => (
+                      <li key={idx} className="flex justify-between py-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-ink">{item.product_name}</span>
+                          {item.size && (
+                            <span className="text-[10px] font-mono uppercase border border-ink/10 px-1.5 py-0.5 text-muted-foreground bg-muted">
+                              {item.size}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">x{item.quantity}</span>
+                        </div>
+                        <span className="font-semibold text-ink">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -114,4 +114,9 @@ class OrderService
     {
         return $this->repository->updateStatus($id, $orderStatus, $paymentStatus);
     }
+
+    public function getCustomerOrders(int $customerId): array
+    {
+        return $this->repository->findByCustomerId($customerId);
+    }
 }
