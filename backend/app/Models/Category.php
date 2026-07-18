@@ -48,7 +48,7 @@ class Category extends BaseModel
     {
         $imageUrl = $this->image;
         if (!empty($imageUrl) && !str_starts_with($imageUrl, 'http')) {
-            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/all-stage/All-stage/backend/public';
             $imageUrl = rtrim($appUrl, '/') . '/' . ltrim($imageUrl, '/');
         }
 

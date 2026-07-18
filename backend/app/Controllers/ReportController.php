@@ -13,7 +13,7 @@ class ReportController extends BaseController
 
     public function __construct()
     {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = Database::connection();
     }
 
     /**

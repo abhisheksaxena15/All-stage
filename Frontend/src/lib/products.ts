@@ -203,7 +203,8 @@ export function useProductsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products")
+    const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost/all-stage/All-stage/backend/public/api";
+    fetch(`${apiBase}/admin/products`)
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.data && json.data.data) {
@@ -229,7 +230,8 @@ export function useCategoriesList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/categories")
+    const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost/all-stage/All-stage/backend/public/api";
+    fetch(`${apiBase}/admin/categories`)
       .then((res) => res.json())
       .then((json) => {
         if (json.success && Array.isArray(json.data)) {

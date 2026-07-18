@@ -161,7 +161,7 @@ class ProductRepository extends BaseRepository
 
         // Generate full URL
         if ($primaryUrl && !str_starts_with($primaryUrl, 'http')) {
-            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/all-stage/All-stage/backend/public';
             $primaryUrl = rtrim($appUrl, '/') . '/' . ltrim($primaryUrl, '/');
         }
 
@@ -265,7 +265,7 @@ class ProductRepository extends BaseRepository
             if ($imgRow) {
                 $path = $imgRow['image_path'];
                 if (!str_starts_with($path, 'http')) {
-                    $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+                    $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/all-stage/All-stage/backend/public';
                     $path = rtrim($appUrl, '/') . '/' . ltrim($path, '/');
                 }
                 $product->setPrimaryImageUrl($path);

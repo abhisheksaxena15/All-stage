@@ -17,3 +17,8 @@ $router->post(
     '/api/orders',
     [OrderController::class, 'store']
 );
+
+$router->post(
+    '/api/visit',
+    [App\Controllers\DashboardController::class, 'logVisit']
+);

@@ -41,7 +41,8 @@ function CartPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/orders", {
+      const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost/all-stage/All-stage/backend/public/api";
+      const res = await fetch(`${apiBase}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

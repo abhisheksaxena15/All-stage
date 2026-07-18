@@ -80,7 +80,7 @@ class ProductImage extends BaseModel
     {
         $url = $this->imagePath;
         if (!empty($url) && !str_starts_with($url, 'http')) {
-            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/all-stage/All-stage/backend/public';
             $url = rtrim($appUrl, '/') . '/' . ltrim($url, '/');
         }
 

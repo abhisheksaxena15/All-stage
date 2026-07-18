@@ -28,12 +28,17 @@ class Request
 {
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-    // Base path of your application
-    $basePath = '/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
-    // $basePath = '/allstag/backend/public';
+    // Base path of your application (dynamically resolved)
+    $basePath = '';
+    if (isset($_SERVER['SCRIPT_NAME'])) {
+        $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+        if ($basePath === '/' || $basePath === '.') {
+            $basePath = '';
+        }
+    }
 
     // Remove base path
-    if (str_starts_with($uri, $basePath)) {
+    if (!empty($basePath) && str_starts_with($uri, $basePath)) {
         $uri = substr($uri, strlen($basePath));
     }
 
@@ -66,13 +71,13 @@ class Request
     /**
      * Query Parameters
      */
-    public static function query(?string $key = null): mixed
+    public static function query(?string $key = null, mixed $default = null): mixed
     {
         if ($key === null) {
             return $_GET;
         }
 
-        return $_GET[$key] ?? null;
+        return $_GET[$key] ?? $default;
     }
 
     /**

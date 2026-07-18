@@ -10,7 +10,8 @@ export const Route = createFileRoute("/products/$handle")({
     let product = PRODUCTS.find((p) => p.handle === params.handle);
     if (!product) {
       try {
-        const res = await fetch("http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public/api/admin/products");
+        const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost/all-stage/All-stage/backend/public/api";
+        const res = await fetch(`${apiBase}/admin/products`);
         const json = await res.json();
         if (json.success && json.data && json.data.data) {
           const matched = json.data.data.find((p: any) => p.slug === params.handle);

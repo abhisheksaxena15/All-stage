@@ -35,7 +35,7 @@ class Brand extends BaseModel
     {
         $logoUrl = $this->logo;
         if (!empty($logoUrl) && !str_starts_with($logoUrl, 'http')) {
-            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/allstag-insight-hub-main/allstag-insight-hub-main/backend/public';
+            $appUrl = $_ENV['APP_URL'] ?? 'http://localhost/all-stage/All-stage/backend/public';
             $logoUrl = rtrim($appUrl, '/') . '/' . ltrim($logoUrl, '/');
         }
 
