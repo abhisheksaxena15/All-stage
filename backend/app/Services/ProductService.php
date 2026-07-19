@@ -305,7 +305,19 @@ class ProductService
      */
     public function delete(int $id): bool
     {
-        // Delete all images first
+        // Check if the product has ever been ordered
+        $db = \App\Core\Database::connection();
+        $stmt = $db->prepare("SELECT COUNT(*) FROM order_items WHERE product_id = :product_id");
+        $stmt->execute([':product_id' => $id]);
+        $hasOrders = ((int)$stmt->fetchColumn()) > 0;
+
+        if ($hasOrders) {
+            // Soft delete: set status to ARCHIVED so order history references stay valid
+            $updateStmt = $db->prepare("UPDATE products SET status = 'ARCHIVED' WHERE id = :id");
+            return $updateStmt->execute([':id' => $id]);
+        }
+
+        // Hard delete (for products that haven't been ordered): delete images first
         $product = $this->repository->findById($id);
         if ($product && !empty($product->getImages())) {
             $imageRepo = new ProductImageRepository();

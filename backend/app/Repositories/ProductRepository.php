@@ -190,6 +190,8 @@ class ProductRepository extends BaseRepository
         if (!empty($filters['status'])) {
             $sql .= " AND p.status = :status";
             $params[':status'] = strtoupper($filters['status']);
+        } else {
+            $sql .= " AND p.status != 'ARCHIVED'";
         }
 
         if (!empty($filters['category_id'])) {
@@ -294,6 +296,8 @@ class ProductRepository extends BaseRepository
         if (!empty($filters['status'])) {
             $sql .= " AND p.status = :status";
             $params[':status'] = strtoupper($filters['status']);
+        } else {
+            $sql .= " AND p.status != 'ARCHIVED'";
         }
 
         if (!empty($filters['category_id'])) {
