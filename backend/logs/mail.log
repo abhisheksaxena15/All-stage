@@ -208,3 +208,45 @@
 
         
 ---
+[2026-07-19 21:17:24] (SMTP Failed: SMTP Error: Could not connect to SMTP host. Failed to connect to server) TO: abhisheksxna.15@gmail.com | SUBJECT: Your Login OTP | BODY: 
+
+        <div style='font-family:Arial;padding:30px'>
+
+            <h2>AllStage Login Verification</h2>
+
+            <p>Your One Time Password is</p>
+
+            <h1
+                style='
+                    letter-spacing:5px;
+                    color:#2563eb;
+                    font-size:40px;
+                '
+            >
+
+            484415
+
+            </h1>
+
+            <p>
+
+            This OTP is valid for only
+
+            <b>5 minutes.</b>
+
+            </p>
+
+            <br>
+
+            <p>
+
+            If you didn't request this,
+
+            ignore this email.
+
+            </p>
+
+        </div>
+
+        
+---

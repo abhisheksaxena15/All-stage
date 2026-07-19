@@ -50,22 +50,22 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "Content",
     items: [
-      { label: "Banners", to: "/admin/banners", icon: ImageIcon },
-      { label: "CMS Pages", to: "/admin/cms", icon: FileText },
-      { label: "Testimonials", to: "/admin/testimonials", icon: MessageSquareQuote },
+      // { label: "Banners", to: "/admin/banners", icon: ImageIcon },
+      // { label: "CMS Pages", to: "/admin/cms", icon: FileText },
+      // { label: "Testimonials", to: "/admin/testimonials", icon: MessageSquareQuote },
     ],
   },
   {
     section: "Insights",
     items: [
       { label: "Reports", to: "/admin/reports", icon: BarChart3 },
-      { label: "Analytics", to: "/admin/analytics", icon: LineChart },
+      // { label: "Analytics", to: "/admin/analytics", icon: LineChart },
     ],
   },
   {
     section: "Account",
     items: [
-      { label: "Settings", to: "/admin/settings", icon: Settings },
+      // { label: "Settings", to: "/admin/settings", icon: Settings },
       { label: "Profile", to: "/admin/profile", icon: UserCircle },
     ],
   },

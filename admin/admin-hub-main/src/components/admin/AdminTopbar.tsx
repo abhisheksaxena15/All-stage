@@ -32,12 +32,12 @@ export function AdminTopbar({ user }: { user: AdminUser | null }) {
         />
       </div>
 
-      <button
+      {/* <button
         className="hidden md:inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background hover:bg-foreground/90"
         type="button"
       >
         <Plus className="h-4 w-4" /> Quick add
-      </button>
+      </button> */}
 
       <button
         onClick={toggleTheme}
