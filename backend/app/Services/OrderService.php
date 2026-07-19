@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Repositories\OrderRepository;
 use Exception;
+use PDO;
 
 class OrderService
 {
@@ -41,77 +42,119 @@ class OrderService
             throw new Exception("Shipping details (name, email, phone) are required.");
         }
 
-        $productRepo = new \App\Repositories\ProductRepository();
+        $db = \App\Core\Database::connection();
+        $db->beginTransaction();
 
-        // Calculate total amount
-        $totalAmount = 0.0;
-        foreach ($itemsData as $item) {
-            $price = 0.0;
-            if (!empty($item['handle'])) {
-                $product = $productRepo->findBySlug($item['handle']);
-                if ($product) {
-                    $price = (float)$product->getSellingPrice();
+        try {
+            $productRepo = new \App\Repositories\ProductRepository();
+
+            // 1. Validate ALL products and stock levels before modifying any database tables!
+            $validatedItems = [];
+            $totalAmount = 0.0;
+
+            foreach ($itemsData as $item) {
+                $product = null;
+                if (!empty($item['handle'])) {
+                    $product = $productRepo->findBySlug($item['handle']);
                 }
-            } else {
-                $price = (float)($item['price'] ?? 0.0);
+
+                if (!$product) {
+                    throw new Exception("Product '" . ($item['handle'] ?? 'Unknown') . "' not found in database. Please clear your cart and add active products.");
+                }
+
+                $qty = (int)($item['quantity'] ?? 1);
+                if ($qty <= 0) {
+                    throw new Exception("Invalid quantity for product '" . $product->getName() . "'.");
+                }
+
+                // Check stock levels in `inventory` table
+                $stmt = $db->prepare("SELECT * FROM inventory WHERE product_id = :product_id LIMIT 1");
+                $stmt->execute([':product_id' => $product->getId()]);
+                $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$inv) {
+                    // Initialize default inventory for development if not exists (starts with 100 in stock)
+                    $insertStmt = $db->prepare("INSERT INTO inventory (product_id, quantity, warehouse) VALUES (:product_id, 100, 'Main Warehouse')");
+                    $insertStmt->execute([':product_id' => $product->getId()]);
+                    $available = 100;
+                } else {
+                    $available = (int)$inv['quantity'];
+                }
+
+                if ($qty > $available) {
+                    throw new Exception("Product '" . $product->getName() . "' does not have enough stock. Available: " . $available . ", Requested: " . $qty);
+                }
+
+                $validatedItems[] = [
+                    'product' => $product,
+                    'qty' => $qty,
+                    'size' => $item['size'] ?? null
+                ];
+
+                $totalAmount += (float)$product->getSellingPrice() * $qty;
             }
-            $qty = (int)($item['quantity'] ?? 1);
-            $totalAmount += $price * $qty;
+
+            // 2. Record customer stats
+            $customer = $this->customerService->recordOrder(
+                $shipping['name'],
+                $shipping['email'],
+                $shipping['phone'],
+                $totalAmount
+            );
+
+            // 3. Build & Create Order record
+            $order = new Order();
+            $order->setCustomerId($customer->getId());
+            $order->setOrderNumber('ORD-' . strtoupper(dechex(time())) . '-' . rand(1000, 9999));
+            $order->setTotalAmount($totalAmount);
+            $order->setPaymentStatus($data['payment_status'] ?? 'PENDING');
+            $order->setOrderStatus($data['order_status'] ?? 'PENDING');
+            $order->setShippingName($shipping['name']);
+            $order->setShippingEmail($shipping['email']);
+            $order->setShippingPhone($shipping['phone']);
+            $order->setShippingAddress($shipping['address'] ?? '');
+            $order->setShippingCity($shipping['city'] ?? '');
+            $order->setShippingPincode($shipping['pincode'] ?? '');
+
+            $orderId = $this->repository->create($order);
+            $order->setId($orderId);
+
+            // 4. Save line items and Decrement inventory stock
+            $orderItems = [];
+            foreach ($validatedItems as $vItem) {
+                $product = $vItem['product'];
+                $qty = $vItem['qty'];
+                $size = $vItem['size'];
+
+                // Decrement inventory stock
+                $updateStmt = $db->prepare("UPDATE inventory SET quantity = quantity - :qty WHERE product_id = :product_id");
+                $updateStmt->execute([
+                    ':qty' => $qty,
+                    ':product_id' => $product->getId()
+                ]);
+
+                // Create OrderItem
+                $orderItem = new OrderItem();
+                $orderItem->setOrderId($orderId);
+                $orderItem->setProductId($product->getId());
+                $orderItem->setProductName($product->getName());
+                $orderItem->setPrice((float)$product->getSellingPrice());
+                $orderItem->setQuantity($qty);
+                $orderItem->setSize($size);
+
+                $itemId = $this->repository->createItem($orderItem);
+                $orderItem->setId($itemId);
+                $orderItems[] = $orderItem;
+            }
+
+            $order->setItems($orderItems);
+            $db->commit();
+            return $order;
+
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
         }
-
-        // Record customer stats (upsert)
-        $customer = $this->customerService->recordOrder(
-            $shipping['name'],
-            $shipping['email'],
-            $shipping['phone'],
-            $totalAmount
-        );
-
-        // Build Order
-        $order = new Order();
-        $order->setCustomerId($customer->getId());
-        $order->setOrderNumber('ORD-' . strtoupper(dechex(time())) . '-' . rand(1000, 9999));
-        $order->setTotalAmount($totalAmount);
-        $order->setPaymentStatus($data['payment_status'] ?? 'PENDING');
-        $order->setOrderStatus($data['order_status'] ?? 'PENDING');
-        $order->setShippingName($shipping['name']);
-        $order->setShippingEmail($shipping['email']);
-        $order->setShippingPhone($shipping['phone']);
-        $order->setShippingAddress($shipping['address'] ?? '');
-        $order->setShippingCity($shipping['city'] ?? '');
-        $order->setShippingPincode($shipping['pincode'] ?? '');
-
-        // Save order in database
-        $orderId = $this->repository->create($order);
-        $order->setId($orderId);
-
-        // Save line items
-        $orderItems = [];
-        foreach ($itemsData as $item) {
-            $product = null;
-            if (!empty($item['handle'])) {
-                $product = $productRepo->findBySlug($item['handle']);
-            }
-
-            if (!$product) {
-                throw new Exception("Product '" . ($item['handle'] ?? 'Unknown') . "' not found in database. Please clear your cart and add active products.");
-            }
-
-            $orderItem = new OrderItem();
-            $orderItem->setOrderId($orderId);
-            $orderItem->setProductId($product->getId());
-            $orderItem->setProductName($product->getName());
-            $orderItem->setPrice($product ? (float)$product->getSellingPrice() : (float)($item['price'] ?? 0.0));
-            $orderItem->setQuantity((int)($item['quantity'] ?? 1));
-            $orderItem->setSize($item['size'] ?? null);
-
-            $itemId = $this->repository->createItem($orderItem);
-            $orderItem->setId($itemId);
-            $orderItems[] = $orderItem;
-        }
-
-        $order->setItems($orderItems);
-        return $order;
     }
 
     public function updateOrderStatus(int $id, string $orderStatus, string $paymentStatus): bool
