@@ -1,6 +1,6 @@
-# Allstag E-Commerce Platform
+# Allstage E-Commerce Platform
 
-Allstag is a full-stack, heavyweight streetwear e-commerce platform. It is split into three main components: a custom PHP REST API, an admin dashboard panel, and a storefront client.
+Allstage is a full-stack, heavyweight streetwear e-commerce platform. It is split into three main components: a custom PHP REST API, an admin dashboard panel, and a storefront client.
 
 ---
 
