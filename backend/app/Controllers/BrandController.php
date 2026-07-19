@@ -105,4 +105,38 @@ class BrandController extends BaseController
             "Brand Deleted"
         );
     }
+
+    /**
+     * PUT /api/admin/brands/{id}
+     */
+    public function update(int $id): void
+    {
+        $id = $id ?: (int) Request::param('id');
+        $data = Request::body();
+
+        $validator = new BrandValidator();
+        $validation = $validator->validate($data);
+
+        if (!$validation['valid']) {
+            $this->error(
+                "Validation Failed",
+                422,
+                $validation['errors']
+            );
+            return;
+        }
+
+        try {
+            $brand = $this->service->update($id, $data);
+            $this->success(
+                $brand->toArray(),
+                "Brand Updated"
+            );
+        } catch (Exception $e) {
+            $this->error(
+                $e->getMessage(),
+                400
+            );
+        }
+    }
 }

@@ -100,4 +100,29 @@ class CategoryRepository extends BaseRepository
         $stmt->execute([':category_id' => $categoryId]);
         return ((int)$stmt->fetchColumn()) > 0;
     }
+
+    public function update(Category $category): bool
+    {
+        $sql = "UPDATE categories SET
+                    name = :name,
+                    slug = :slug,
+                    description = :description,
+                    image = :image,
+                    banner = :banner,
+                    sort_order = :sort_order,
+                    status = :status
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':name' => $category->getName(),
+            ':slug' => $category->getSlug(),
+            ':description' => $category->getDescription(),
+            ':image' => $category->getImage(),
+            ':banner' => $category->getBanner(),
+            ':sort_order' => $category->getSortOrder(),
+            ':status' => $category->getStatus(),
+            ':id' => $category->getId()
+        ]);
+    }
 }

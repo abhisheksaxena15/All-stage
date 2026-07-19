@@ -32,8 +32,13 @@ $router->post(
     [BrandController::class, 'store']
 );
 
+$router->put(
+    '/api/admin/brands/{id}',
+    [BrandController::class, 'update']
+);
+
 $router->delete(
-    '/api/admin/brands',
+    '/api/admin/brands/{id}',
     [BrandController::class, 'destroy']
 );
 
@@ -47,6 +52,11 @@ $router->get(
 $router->post(
     '/api/admin/categories',
     [CategoryController::class, 'store']
+);
+
+$router->put(
+    '/api/admin/categories/{id}',
+    [CategoryController::class, 'update']
 );
 
 $router->delete(
@@ -64,6 +74,16 @@ $router->get(
 $router->post(
     '/api/admin/subcategories',
     [SubcategoryController::class, 'store']
+);
+
+$router->put(
+    '/api/admin/subcategories/{id}',
+    [SubcategoryController::class, 'update']
+);
+
+$router->delete(
+    '/api/admin/subcategories/{id}',
+    [SubcategoryController::class, 'destroy']
 );
 
 use App\Controllers\ProductController;

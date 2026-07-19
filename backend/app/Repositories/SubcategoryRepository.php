@@ -101,4 +101,29 @@ class SubcategoryRepository extends BaseRepository
             return new Subcategory($row);
         }, $rows);
     }
+
+    public function update(Subcategory $subcategory): bool
+    {
+        $sql = "UPDATE subcategories SET
+                    category_id = :category_id,
+                    name = :name,
+                    slug = :slug,
+                    description = :description,
+                    image = :image,
+                    sort_order = :sort_order,
+                    status = :status
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':category_id' => $subcategory->getCategoryId(),
+            ':name' => $subcategory->getName(),
+            ':slug' => $subcategory->getSlug(),
+            ':description' => $subcategory->getDescription(),
+            ':image' => $subcategory->getImage(),
+            ':sort_order' => $subcategory->getSortOrder(),
+            ':status' => $subcategory->getStatus(),
+            ':id' => $subcategory->getId()
+        ]);
+    }
 }

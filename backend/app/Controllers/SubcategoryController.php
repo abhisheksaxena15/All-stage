@@ -82,4 +82,59 @@ class SubcategoryController extends BaseController
             );
         }
     }
+
+    /**
+     * PUT /api/admin/subcategories/{id}
+     */
+    public function update(int $id): void
+    {
+        $id = $id ?: (int) Request::param('id');
+        $data = Request::body();
+
+        $validator = new SubcategoryValidator();
+        $validation = $validator->validate($data);
+
+        if (!$validation['valid']) {
+            $this->error(
+                "Validation Failed",
+                422,
+                $validation['errors']
+            );
+            return;
+        }
+
+        try {
+            $subcategory = $this->service->update($id, $data);
+            $this->success(
+                $subcategory->toArray(),
+                "Subcategory Updated"
+            );
+        } catch (Exception $e) {
+            $this->error(
+                $e->getMessage(),
+                400
+            );
+        }
+    }
+
+    /**
+     * DELETE /api/admin/subcategories/{id}
+     */
+    public function destroy(int $id): void
+    {
+        $id = $id ?: (int) Request::param('id');
+
+        try {
+            $this->service->delete($id);
+            $this->success(
+                [],
+                "Subcategory Deleted"
+            );
+        } catch (Exception $e) {
+            $this->error(
+                $e->getMessage(),
+                400
+            );
+        }
+    }
 }

@@ -84,15 +84,49 @@ class CategoryController extends BaseController
     /**
      * DELETE /api/admin/categories/{id}
      */
-    public function destroy(): void
+    public function destroy(int $id): void
     {
-        $id = (int) Request::param('id');
+        $id = $id ?: (int) Request::param('id');
 
         try {
             $this->service->delete($id);
             $this->success(
                 [],
                 "Category Deleted"
+            );
+        } catch (Exception $e) {
+            $this->error(
+                $e->getMessage(),
+                400
+            );
+        }
+    }
+
+    /**
+     * PUT /api/admin/categories/{id}
+     */
+    public function update(int $id): void
+    {
+        $id = $id ?: (int) Request::param('id');
+        $data = Request::body();
+
+        $validator = new CategoryValidator();
+        $validation = $validator->validate($data);
+
+        if (!$validation['valid']) {
+            $this->error(
+                "Validation Failed",
+                422,
+                $validation['errors']
+            );
+            return;
+        }
+
+        try {
+            $category = $this->service->update($id, $data);
+            $this->success(
+                $category->toArray(),
+                "Category Updated"
             );
         } catch (Exception $e) {
             $this->error(

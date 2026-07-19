@@ -86,4 +86,29 @@ class BrandRepository extends BaseRepository
             return new Brand($row);
         }, $rows);
     }
+
+    public function update(Brand $brand): bool
+    {
+        $sql = "UPDATE brands SET
+                    name = :name,
+                    slug = :slug,
+                    description = :description,
+                    logo = :logo,
+                    website = :website,
+                    sort_order = :sort_order,
+                    status = :status
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':name' => $brand->getName(),
+            ':slug' => $brand->getSlug(),
+            ':description' => $brand->getDescription(),
+            ':logo' => $brand->getLogo(),
+            ':website' => $brand->getWebsite(),
+            ':sort_order' => $brand->getSortOrder(),
+            ':status' => $brand->getStatus(),
+            ':id' => $brand->getId()
+        ]);
+    }
 }
