@@ -119,6 +119,11 @@ $router->put(
     [ProductController::class, 'update']
 );
 
+$router->put(
+    '/api/admin/products/{id}/inventory',
+    [ProductController::class, 'updateInventory']
+);
+
 $router->delete(
     '/api/admin/products/{id}',
     [ProductController::class, 'destroy']

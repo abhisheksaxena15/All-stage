@@ -15,6 +15,7 @@ import {
   Settings,
   UserCircle,
   LogOut,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     section: "Catalog",
     items: [
       { label: "Products", to: "/admin/products", icon: Package },
+      { label: "Inventory", to: "/admin/inventory", icon: Warehouse },
       { label: "Categories", to: "/admin/categories", icon: FolderTree },
       { label: "Subcategories", to: "/admin/subcategories", icon: Layers },
       { label: "Brands", to: "/admin/brands", icon: Tag },

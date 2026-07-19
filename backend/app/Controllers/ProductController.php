@@ -227,4 +227,44 @@ public function destroy(): void
             $this->error($e->getMessage(), 400);
         }
     }
+
+    /**
+     * PUT /api/admin/products/{id}/inventory
+     */
+    public function updateInventory(int $id): void
+    {
+        $id = $id ?: (int) Request::param('id');
+        $data = Request::body();
+
+        $qty = isset($data['quantity']) ? (int)$data['quantity'] : null;
+        $lowStock = isset($data['low_stock_threshold']) ? (int)$data['low_stock_threshold'] : null;
+
+        if ($qty === null && $lowStock === null) {
+            $this->error("No inventory details provided", 400);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::connection();
+            $updFields = [];
+            $updParams = [':product_id' => $id];
+            if ($qty !== null) {
+                $updFields[] = "quantity = :quantity";
+                $updParams[':quantity'] = $qty < 0 ? 0 : $qty;
+            }
+            if ($lowStock !== null) {
+                $updFields[] = "low_stock_threshold = :low_stock_threshold";
+                $updParams[':low_stock_threshold'] = $lowStock < 0 ? 0 : $lowStock;
+            }
+
+            if (!empty($updFields)) {
+                $db->prepare("UPDATE inventory SET " . implode(", ", $updFields) . " WHERE product_id = :product_id")->execute($updParams);
+            }
+
+            $product = $this->service->getById($id);
+            $this->success($product->toArray(), "Inventory Updated");
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
 }

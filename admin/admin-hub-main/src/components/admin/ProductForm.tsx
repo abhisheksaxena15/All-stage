@@ -20,13 +20,17 @@ interface FormState {
   short_description: string;
   description: string;
  selling_price: string;
-compare_price: string;
-cost_price: string;
+  selling_price: string;
+  compare_price: string;
+  cost_price: string;
   category_id: string;
   subcategory_id: string;
   brand_id: string;
   featured: boolean;
-status: "ACTIVE" | "DRAFT" | "ARCHIVED";}
+  status: "ACTIVE" | "DRAFT" | "ARCHIVED";
+  quantity: string;
+  low_stock_threshold: string;
+}
 
 const empty: FormState = {
   name: "",
@@ -42,6 +46,8 @@ const empty: FormState = {
   brand_id: "",
   featured: false,
   status: "ACTIVE",
+  quantity: "100",
+  low_stock_threshold: "10",
 };
 
 function slugify(s: string) {
@@ -96,6 +102,8 @@ export function ProductForm({ productId }: { productId?: string }) {
       brand_id: p.brand_id != null ? String(p.brand_id) : "",
       featured: !!p.featured,
       status: p.status ?? "ACTIVE",
+      quantity: p.quantity != null ? String(p.quantity) : "0",
+      low_stock_threshold: p.low_stock_threshold != null ? String(p.low_stock_threshold) : "10",
     });
     setExistingImages(p.images ?? []);
     setSlugDirty(true);
@@ -146,6 +154,8 @@ export function ProductForm({ productId }: { productId?: string }) {
     if (form.compare_price && Number(form.compare_price) >= Number(form.selling_price))
       e.compare_price = "Must be lower than selling_price";
     if (Number(form.cost_price) < 0) e.cost_price = "Cannot be negative";
+    if (form.quantity === "" || Number(form.quantity) < 0) e.quantity = "Cannot be negative";
+    if (form.low_stock_threshold === "" || Number(form.low_stock_threshold) < 0) e.low_stock_threshold = "Cannot be negative";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -303,7 +313,7 @@ export function ProductForm({ productId }: { productId?: string }) {
 
           <Card className="p-5">
             <h3 className="mb-4 text-sm font-semibold">Pricing & inventory</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3 mb-4">
               <Field label="selling_price (₹)" required error={errors.selling_price}>
                 <Input
                   type="number"
@@ -329,6 +339,24 @@ export function ProductForm({ productId }: { productId?: string }) {
                   step="0.01"
                   value={form.cost_price}
                   onChange={(e) => update({ cost_price: e.target.value })}
+                />
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Stock Quantity" required error={errors.quantity}>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.quantity}
+                  onChange={(e) => update({ quantity: e.target.value })}
+                />
+              </Field>
+              <Field label="Low Stock Threshold" required error={errors.low_stock_threshold}>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.low_stock_threshold}
+                  onChange={(e) => update({ low_stock_threshold: e.target.value })}
                 />
               </Field>
             </div>

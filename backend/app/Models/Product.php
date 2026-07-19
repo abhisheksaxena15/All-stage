@@ -44,6 +44,10 @@ class Product extends BaseModel
 
     private ?string $primaryImageUrl = null;
 
+    private int $quantity = 0;
+
+    private int $lowStockThreshold = 10;
+
     public function __construct(array $data = [])
 {
     if (!empty($data)) {
@@ -98,6 +102,14 @@ class Product extends BaseModel
 
         if (isset($data['primary_image_url'])) {
             $this->primaryImageUrl = $data['primary_image_url'];
+        }
+
+        if (isset($data['quantity'])) {
+            $this->quantity = (int)$data['quantity'];
+        }
+
+        if (isset($data['low_stock_threshold'])) {
+            $this->lowStockThreshold = (int)$data['low_stock_threshold'];
         }
     }
 }
@@ -164,6 +176,12 @@ class Product extends BaseModel
     public function isBestSeller(): bool { return $this->bestSeller; }
     public function setBestSeller(bool $value): void { $this->bestSeller = $value; }
 
+    public function getQuantity(): int { return $this->quantity; }
+    public function setQuantity(int $value): void { $this->quantity = $value; }
+
+    public function getLowStockThreshold(): int { return $this->lowStockThreshold; }
+    public function setLowStockThreshold(int $value): void { $this->lowStockThreshold = $value; }
+
     public function toArray(): array
 {
     return [
@@ -206,8 +224,9 @@ class Product extends BaseModel
 
         'images' => array_map(fn($img) => $img->toArray(), $this->images),
 
-        'primary_image_url' => $this->primaryImageUrl
-
+        'primary_image_url' => $this->primaryImageUrl,
+        'quantity' => $this->quantity,
+        'low_stock_threshold' => $this->lowStockThreshold
     ];
 }
 }

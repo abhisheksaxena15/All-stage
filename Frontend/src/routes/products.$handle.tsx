@@ -59,6 +59,14 @@ function ProductPage() {
   const [activeImage, setActiveImage] = useState(product.image);
 
   useEffect(() => {
+    if (product.quantity === 0) {
+      setQty(0);
+    } else {
+      setQty(1);
+    }
+  }, [product.quantity]);
+
+  useEffect(() => {
     setActiveImage(product.image);
   }, [product.image]);
 
@@ -149,6 +157,17 @@ function ProductPage() {
             </p>
           )}
 
+          {/* Stock Level Indicator */}
+          <div className="mt-5 text-sm font-semibold">
+            {product.quantity === 0 ? (
+              <span className="text-molten flex items-center gap-1.5">🔴 Out of Stock</span>
+            ) : product.quantity <= (product.low_stock_threshold ?? 10) ? (
+              <span className="text-amber-600 flex items-center gap-1.5">⚠️ Low Stock: Only {product.quantity} left in inventory!</span>
+            ) : (
+              <span className="text-green-700 flex items-center gap-1.5">🟢 In Stock ({product.quantity} available)</span>
+            )}
+          </div>
+
           {/* Size */}
           <div className="mt-6">
             <div className="flex items-center justify-between">
@@ -185,15 +204,32 @@ function ProductPage() {
           {/* Qty + CTAs */}
           <div className="mt-6 flex gap-3">
             <div className="flex items-center border border-ink/20">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-3 hover:bg-ink hover:text-bone">−</button>
+              <button
+                onClick={() => setQty((q) => Math.max(product.quantity === 0 ? 0 : 1, q - 1))}
+                disabled={product.quantity === 0}
+                className="px-3 py-3 hover:bg-ink hover:text-bone disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                −
+              </button>
               <span className="w-10 text-center text-sm font-semibold">{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)} className="px-3 py-3 hover:bg-ink hover:text-bone">+</button>
+              <button
+                onClick={() => setQty((q) => Math.min(product.quantity ?? 999, q + 1))}
+                disabled={product.quantity === 0 || qty >= (product.quantity ?? 999)}
+                className="px-3 py-3 hover:bg-ink hover:text-bone disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
             </div>
             <button
               onClick={handleAdd}
-              className="flex-1 border border-ink bg-bone py-3 text-sm font-bold uppercase tracking-widest hover:bg-ink hover:text-bone"
+              disabled={product.quantity === 0}
+              className={`flex-1 border py-3 text-sm font-bold uppercase tracking-widest transition ${
+                product.quantity === 0
+                  ? "border-ink/20 bg-ink/10 text-ink/40 cursor-not-allowed"
+                  : "border-ink bg-bone hover:bg-ink hover:text-bone"
+              }`}
             >
-              {added ? "✦ Added to Bag" : "Add to Bag"}
+              {product.quantity === 0 ? "Out of Stock" : added ? "✦ Added to Bag" : "Add to Bag"}
             </button>
             <button aria-label="Wishlist" className="grid w-12 place-items-center border border-ink/20 hover:border-molten hover:text-molten">
               <Heart className="h-5 w-5" />
@@ -202,9 +238,14 @@ function ProductPage() {
 
           <button
             onClick={handleBuyNow}
-            className="mt-3 flex w-full items-center justify-center gap-2 bg-molten py-4 text-sm font-bold uppercase tracking-widest text-bone hover:bg-molten-deep"
+            disabled={product.quantity === 0}
+            className={`mt-3 flex w-full items-center justify-center gap-2 py-4 text-sm font-bold uppercase tracking-widest transition ${
+              product.quantity === 0
+                ? "bg-molten/20 text-molten/40 cursor-not-allowed"
+                : "bg-molten text-bone hover:bg-molten-deep"
+            }`}
           >
-            Buy Now · UPI 1-Click
+            {product.quantity === 0 ? "Out of Stock" : "Buy Now · UPI 1-Click"}
           </button>
 
 

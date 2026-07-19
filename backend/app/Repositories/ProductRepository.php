@@ -120,10 +120,12 @@ class ProductRepository extends BaseRepository
     public function findById(int $id): ?Product
     {
         $stmt = $this->db->prepare("
-            SELECT p.*, b.name as brand_name, c.name as category_name
+            SELECT p.*, b.name as brand_name, c.name as category_name,
+                   COALESCE(i.quantity, 0) as quantity, COALESCE(i.low_stock_threshold, 10) as low_stock_threshold
             FROM products p
             LEFT JOIN brands b ON p.brand_id = b.id
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE p.id = :id
             LIMIT 1
         ");
@@ -174,10 +176,12 @@ class ProductRepository extends BaseRepository
     public function findAll(array $filters = []): array
     {
         $sql = "
-            SELECT p.*, b.name as brand_name, c.name as category_name
+            SELECT p.*, b.name as brand_name, c.name as category_name,
+                   COALESCE(i.quantity, 0) as quantity, COALESCE(i.low_stock_threshold, 10) as low_stock_threshold
             FROM products p
             LEFT JOIN brands b ON p.brand_id = b.id
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE 1=1
         ";
         $params = [];

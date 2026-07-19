@@ -159,7 +159,67 @@ class OrderService
 
     public function updateOrderStatus(int $id, string $orderStatus, string $paymentStatus): bool
     {
-        return $this->repository->updateStatus($id, $orderStatus, $paymentStatus);
+        $db = \App\Core\Database::connection();
+        $db->beginTransaction();
+
+        try {
+            $order = $this->repository->findById($id);
+            if (!$order) {
+                throw new Exception("Order not found.");
+            }
+
+            $oldOrderStatus = $order->getOrderStatus();
+            $newStatusUpper = strtoupper($orderStatus);
+            $oldStatusUpper = strtoupper($oldOrderStatus);
+
+            // If changing to CANCELLED or REFUNDED, restore stock
+            $isCancelling = ($newStatusUpper === 'CANCELLED' || $newStatusUpper === 'REFUNDED');
+            $wasCancelledAlready = ($oldStatusUpper === 'CANCELLED' || $oldStatusUpper === 'REFUNDED');
+
+            if ($isCancelling && !$wasCancelledAlready) {
+                // Restore inventory stock for all items in the order
+                $items = $this->repository->findItemsByOrderId($id);
+                foreach ($items as $item) {
+                    $updateStmt = $db->prepare("UPDATE inventory SET quantity = quantity + :qty WHERE product_id = :product_id");
+                    $updateStmt->execute([
+                        ':qty' => $item->getQuantity(),
+                        ':product_id' => $item->getProductId()
+                    ]);
+                }
+            } 
+            // If changing from CANCELLED/REFUNDED back to active, deduct stock (with verification)
+            elseif (!$isCancelling && $wasCancelledAlready) {
+                $items = $this->repository->findItemsByOrderId($id);
+                foreach ($items as $item) {
+                    // Check stock
+                    $stmt = $db->prepare("SELECT quantity FROM inventory WHERE product_id = :product_id LIMIT 1");
+                    $stmt->execute([':product_id' => $item->getProductId()]);
+                    $available = (int)$stmt->fetchColumn();
+
+                    if ($item->getQuantity() > $available) {
+                        throw new Exception("Cannot reactivate order. Product '" . $item->getProductName() . "' does not have enough stock (Available: " . $available . ").");
+                    }
+
+                    $updateStmt = $db->prepare("UPDATE inventory SET quantity = quantity - :qty WHERE product_id = :product_id");
+                    $updateStmt->execute([
+                        ':qty' => $item->getQuantity(),
+                        ':product_id' => $item->getProductId()
+                    ]);
+                }
+            }
+
+            $success = $this->repository->updateStatus($id, $orderStatus, $paymentStatus);
+            if ($success) {
+                $db->commit();
+                return true;
+            } else {
+                $db->rollBack();
+                return false;
+            }
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
     }
 
     public function getCustomerOrders(int $customerId): array

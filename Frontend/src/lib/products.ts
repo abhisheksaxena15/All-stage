@@ -31,6 +31,8 @@ export type Product = {
   badge?: string;
   images?: string[];
   description?: string;
+  quantity?: number;
+  low_stock_threshold?: number;
 };
 
 export const PRODUCTS: Product[] = [
@@ -195,6 +197,8 @@ export function mapDbProductToStorefront(dbProd: any): Product {
     badge: dbProd.featured ? "FEATURED" : undefined,
     images: images,
     description: dbProd.description || "",
+    quantity: dbProd.quantity != null ? Number(dbProd.quantity) : 100,
+    low_stock_threshold: dbProd.low_stock_threshold != null ? Number(dbProd.low_stock_threshold) : 10,
   };
 }
 
