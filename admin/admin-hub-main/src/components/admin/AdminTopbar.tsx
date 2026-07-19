@@ -49,7 +49,7 @@ export function AdminTopbar({ user }: { user: AdminUser | null }) {
 
       <button
         aria-label="Notifications"
-        className="relative grid h-10 w-10 place-items-center rounded-md hover:bg-muted"
+        className="relative grid h-10 w-10 place-items-center rounded-md hover:bg-muted" 
       >
         <Bell className="h-4 w-4" />
         <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
