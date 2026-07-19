@@ -93,10 +93,14 @@ class OrderService
                 $product = $productRepo->findBySlug($item['handle']);
             }
 
+            if (!$product) {
+                throw new Exception("Product '" . ($item['handle'] ?? 'Unknown') . "' not found in database. Please clear your cart and add active products.");
+            }
+
             $orderItem = new OrderItem();
             $orderItem->setOrderId($orderId);
-            $orderItem->setProductId($product ? $product->getId() : (int)($item['product_id'] ?? 0));
-            $orderItem->setProductName($product ? $product->getName() : ($item['product_name'] ?? 'Unknown Product'));
+            $orderItem->setProductId($product->getId());
+            $orderItem->setProductName($product->getName());
             $orderItem->setPrice($product ? (float)$product->getSellingPrice() : (float)($item['price'] ?? 0.0));
             $orderItem->setQuantity((int)($item['quantity'] ?? 1));
             $orderItem->setSize($item['size'] ?? null);

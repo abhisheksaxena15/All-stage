@@ -97,11 +97,74 @@ class OrderController extends BaseController
 
         try {
             $order = $this->service->createOrder($data);
+
+            /*
+            // ==========================================
+            // FUTURE PAYMENT GATEWAY INTEGRATION (BACKEND)
+            // ==========================================
+            // When order is created, generate a gateway order ID via Razorpay/Stripe API:
+            // 
+            // 1. Initialize your payment gateway client (e.g. Razorpay SDK):
+            //    $api = new \Razorpay\Api\Api($_ENV['RAZORPAY_KEY'], $_ENV['RAZORPAY_SECRET']);
+            //
+            // 2. Create the gateway order payload:
+            //    $gatewayOrder = $api->order->create([
+            //        'receipt' => 'REC-' . $order->getOrderNumber(),
+            //        'amount' => $order->getTotalAmount() * 100, // Amount in paise
+            //        'currency' => 'INR'
+            //    ]);
+            //
+            // 3. Save the returned gateway order ID to the order record in database:
+            //    $order->setGatewayOrderId($gatewayOrder['id']);
+            //    $orderRepository->updateGatewayId($order->getId(), $gatewayOrder['id']);
+            //
+            // 4. Return the gateway order ID to the frontend to launch checkout modal:
+            //    $responseArray = $order->toArray();
+            //    $responseArray['gateway_order_id'] = $gatewayOrder['id'];
+            //    $this->success($responseArray, "Gateway order generated successfully.", 201);
+            //    return;
+            */
+
             $this->success($order->toArray(), "Order placed successfully.", 201);
         } catch (Exception $e) {
             $this->error($e->getMessage(), 400);
         }
     }
+
+    /**
+     * POST /api/orders/verify
+     * 
+     * FUTURE PAYMENT SIGNATURE VERIFICATION ENDPOINT
+     */
+    /*
+    public function verifyPayment(): void
+    {
+        $data = Request::body();
+        $orderId = (int)($data['order_id'] ?? 0);
+        $razorpayOrderId = $data['razorpay_order_id'] ?? '';
+        $razorpayPaymentId = $data['razorpay_payment_id'] ?? '';
+        $razorpaySignature = $data['razorpay_signature'] ?? '';
+
+        try {
+            // Verify HMAC signature:
+            // $generated_signature = hash_hmac(
+            //     'sha256', 
+            //     $razorpayOrderId . "|" . $razorpayPaymentId, 
+            //     $_ENV['RAZORPAY_WEBHOOK_SECRET']
+            // );
+            // 
+            // if ($generated_signature === $razorpaySignature) {
+            //     // Payment verified successfully! Update order status to paid in DB:
+            //     $orderService->updateOrderStatus($orderId, 'CONFIRMED', 'PAID');
+            //     $this->success([], "Payment verified successfully.");
+            // } else {
+            //     $this->error("Invalid signature hash.", 400);
+            // }
+        } catch (Exception $e) {
+            $this->error($e->getMessage(), 500);
+        }
+    }
+    */
 
     /**
      * PUT /api/admin/orders/{id}

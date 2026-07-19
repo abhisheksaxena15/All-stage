@@ -571,6 +571,27 @@ If you have already imported the database and want to manually update details:
 
 You can also reset a forgotten password directly in the application using the **Forgot Password** link on the login screen. It will generate a 6-digit verification code, which is written to your inbox (or logged locally to `backend/logs/mail.log` if SMTP is disabled/restricted).
 
+### Troubleshooting SMTP & Email Verification (OTP)
+
+If you change the email configuration and stop receiving OTP emails:
+1. **Gmail SMTP Authentication**: The mailer is configured in your [backend/.env](file:///c:/xampp/htdocs/all-stage/All-stage/backend/.env) file:
+   ```ini
+   MAIL_USERNAME=your.email@gmail.com
+   MAIL_PASSWORD=your_google_app_password
+   MAIL_FROM=your.email@gmail.com
+   ```
+   If you change `MAIL_USERNAME` to your own email address, you **must** supply a 16-character **Google App Password** in the `MAIL_PASSWORD` field. Standard Gmail passwords will result in a connection/authentication rejection.
+2. **Generating a Google App Password**:
+   * Navigate to [Google Account Security](https://myaccount.google.com/security).
+   * Ensure **2-Step Verification** is enabled.
+   * Search for **App passwords** in the top search bar.
+   * Generate an app password (e.g., name it "AllStage Dev") and copy the 16-character code.
+   * Paste it into `MAIL_PASSWORD` in your `backend/.env` file.
+3. **Local Dev Failsafe Log**:
+   If SMTP is failing or you do not have internet access, the backend automatically intercepts the delivery and logs the OTP content directly to [backend/logs/mail.log](file:///c:/xampp/htdocs/all-stage/All-stage/backend/logs/mail.log). You can open this log file to copy the OTP instantly for local developer testing!
+4. **Sender vs. Recipient Emails**:
+   The configurations in [backend/.env](file:///c:/xampp/htdocs/all-stage/All-stage/backend/.env) (like `MAIL_USERNAME` and `MAIL_PASSWORD`) represent the **sender credentials** (the mail carrier). You do **not** need to change `.env` to log in with a different admin or customer email. The system will send the OTP to whatever email address you enter in the website's login form, as long as the `.env` sender credentials are valid.
+
 ---
 
 ## 12. Change Log (keep updated!)
